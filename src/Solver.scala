@@ -2,6 +2,45 @@ object Solver {
   type Cell = (Option[Int], Boolean, Boolean)
 
   class Board(val width: Int, val height: Int, val rows: List[List[Cell]]) {
+
+    // Because apparently this is how scala does enums.
+    object Side extends Enumeration {
+      type Side = Value
+      val Top, Right, Bottom, Left = Value
+    }
+
+    import Side._
+
+    def solveStep(x: Int, y: Int, side: Side): Board = {
+      side match {
+        // Avoid special cases to handle, so we really only treat left and top
+        case Right => solveStep(x + 1, y, Left)
+        case Bottom => solveStep(x, y + 1, Top)
+        case _ => {
+          // Construct new cell based on side we wish to set line for.
+          val newCell = (rows(y)(x)._1, true, false)
+
+          // Construct new row from the rest of existing row, as well as the changed (new) cell.
+          val newRow = rows(y).take(x) ++ List(newCell) ++ rows(y).drop(x + 1)
+
+          // Assemble new board from old and new rows.
+          val rowsBefore = rows.take(y)
+          val rowsAfter = rows.drop(y + 1)
+          val newRows = rowsBefore ++ List(newRow) ++ rowsAfter
+
+          // Print progress (DEBUG)
+          val newBoard = new Board(width, height, newRows)
+          println(newBoard.toString)
+
+          newBoard
+        }
+      }
+    }
+
+    def solve() = {
+      solveStep(1, 1, Top)
+    }
+
     def toStringInput: String = {
       // Map over every row, drop rightmost item as that is only used in computation of solution.
       // Output number if any, otherwise a star is output. Join cells by space, and rows by newline.

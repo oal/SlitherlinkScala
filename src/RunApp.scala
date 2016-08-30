@@ -23,7 +23,8 @@ object RunApp extends App {
     val lines = scala.io.Source.fromFile(f).mkString.split("\n").toList
     val numPuzzles = lines.head
 
-    println(Solver.parseBoards(lines.tail))
+    val boards = Solver.parseBoards(lines.tail)
+    boards.head.solve()
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
     out.print(numPuzzles + "\n")
