@@ -25,8 +25,7 @@ object RunApp extends App {
 
     val boards = Solver.parseBoards(lines.tail)
     //println(boards.head)
-    val solution = boards.head.solve()
-    println(solution)
+    boards.map(b => b.solve()).foreach(println)
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
     out.print(numPuzzles + "\n")

@@ -72,7 +72,6 @@ object Solver {
     }
 
     def solve(): Puzzle = {
-
       new Puzzle(width, height, rows, start, List(Up)).solveStep().orElse(
         new Puzzle(width, height, rows, start, List(Right)).solveStep().orElse(
           new Puzzle(width, height, rows, start, List(Down)).solveStep().orElse(
@@ -80,12 +79,6 @@ object Solver {
           )
         )
       ).get
-      /*val startBoard = new Board(width, height, rows, (x, y), List(Up))
-
-      new Board(width, height, rows, (x, y), List(Up)).solveStep(Up)
-      // Solve!
-      println(s"Starting at ($x, $y)")
-      startBoard.solveStep(x, y).get*/
     }
 
     def toStringInput: String = {
@@ -101,55 +94,8 @@ object Solver {
     }
 
     override def toString: String = {
-      /*val evenLine = List.fill(width * 2 + 1)(' ').zipWithIndex.map {
-        case (e, i) => if (i % 2 == 0) '+' else ' '
-      }
-      val oddLine = List.fill(width * 2 + 1)(' ')
-
-      val emptyLines = List.fill(height * 2 + 1)(List()).zipWithIndex.map {
-        case (e, i) => if (i % 2 == 0) evenLine else oddLine
-      }
-
-      def setLine(lines: List[List[Char]], from: (Int, Int), to: (Int, Int)): List[List[Char]] = {
-        if(from._2 != to._2) {
-          // Vertical
-          val min = Math.min(from._2, to._2)
-          val max = Math.max(from._2, to._2)
-          val rowsBefore = lines.take(min*2+1)
-          val rowsAfter = lines.drop(max*2)
-
-          val minx = Math.min(from._1, to._1)*2
-          val maxx = Math.max(from._1, to._1)*2
-
-          val newRow = lines(from._2*2+1).take(minx) ++ List('|') ++ lines(from._2*2+1).drop(maxx)
-          rowsBefore ++ List(newRow) ++ rowsAfter
-        } else {
-          // Horizontal
-          val rowsBefore = lines.take(from._2*2)
-          val rowsAfter = lines.drop(from._2*2+1)
-          val min = Math.min(from._1, to._1)*2+1
-          val max = Math.max(from._1, to._1)*2+1
-
-          val newRow = lines(from._2*2).take(min) ++ List('-', '+') ++ lines(from._2*2).drop(max)
-          rowsBefore ++ List(newRow) ++ rowsAfter
-        }
-      }
-
-      def newLines(coords: List[(Int, Int)], lines: List[List[Char]]): List[List[Char]] = {
-        if(coords.length >= 2) {
-          println(lines.map(line => line.mkString("")).mkString("\n"))
-          newLines(coords.drop(2), setLine(lines, coords.head, coords(1)))
-        }
-        else lines
-      }
-
-      val lines = newLines(linkCoords, emptyLines)
-      val str = lines.map(line => line.mkString("")).mkString("\n")*/
-
-      //List.fill(width)("+ ")
-      //
       val slidingCoords = linkCoords.sliding(2).toList
-      println(slidingCoords)
+
       val horizontalLines: List[(Int, Int)] = slidingCoords.
         filter(pair => pair.head._2 == pair(1)._2).
         map(pair => (Math.min(pair.head._1, pair(1)._1), pair(1)._2))
@@ -158,51 +104,32 @@ object Solver {
         filter(pair => pair.head._1 == pair(1)._1).
         map(pair => (pair(1)._1, Math.min(pair.head._2, pair(1)._2)))
 
-      val out = List.fill(height)("").zipWithIndex.map {
+      val out = List.fill(height+1)("").zipWithIndex.map {
         case (s, iy: Int) =>
-          List.fill(width)("").zipWithIndex.map {
-            case (s2, ix: Int) => {
-              if (horizontalLines.count((x, y) => x == ix && y == iy) > 0) "+-"
-              else "+ "
+
+          List(
+            List.fill(width+1)("").zipWithIndex.map {
+              case (s2, ix: Int) => {
+                if (horizontalLines.count { case (x, y) => x == ix && y == iy } > 0) "+-"
+                else "+ "
+              }
+              case _ => "+ "
+            },
+            List.fill(width+1)("").zipWithIndex.map {
+              case (s2, ix: Int) => {
+                if (verticalLines.count { case (x, y) => x == ix && y == iy } > 0) "| "
+                else "  "
+              }
+              case _ => "  "
             }
-            case _ => "+ "
-          }
+          )
       }
 
-      println(out)
+      val asString = out.map(doubleLine => doubleLine.map(
+        line => line.mkString("")).mkString("\n")).mkString("\n")
 
-
-      println(horizontalLines, "ASDASDASD")
-      println(verticalLines)
-      //      linkCoords.drop(1).scanLeft(linkCoords.head) {
-      //        case (r, c) => {
-      //          val diffs = ((r._1 - c._1).abs, (r._2 - c._2).abs)
-      //          diffs match {
-      //            case (1, 0) => "+-"
-      //            case  _ => "+ "
-      //          }
-      //        }
-      //      }
-
-      s"$width x $height\n$link\n\n$linkCoords"
+      s"$width x $height\n$asString"
     }
-
-    /*override def toString: String = {
-      // Prints even rows, with + between lines.
-      def rowEven(row: List[Cell]) = {
-        "+" + row.map(cell => if (cell._2) "-" else " ").mkString("+")
-      }
-      // Prints odd lines, with pipes and spaces.
-      def rowOdd(row: List[Cell]) = {
-        row.map(cell => if (cell._3) "|" else " ").mkString(" ")
-      }
-
-      // Print even version of row, then odd version to get both horizontal and
-      // vertical lines between nodes / cells.
-      val text = rows.map(row => rowEven(row) + "\n" + rowOdd(row)).mkString("\n")
-
-      s"$width x $height\n$text\n"
-    }*/
   }
 
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
