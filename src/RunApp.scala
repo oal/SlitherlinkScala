@@ -24,6 +24,7 @@ object RunApp extends App {
     val numPuzzles = lines.head
 
     val boards = Solver.parseBoards(lines.tail)
+    //println(boards.head)
     val solution = boards.head.solve()
     println(solution)
 
