@@ -47,17 +47,22 @@ object Solver {
 
       val withStart: List[(Int, Int)] = start :: steps
       withStart.drop(1).scanLeft(withStart.head) {
-        case (r, c) => {
-          (r._1 + c._1, r._2 + c._2)
-        }
+        case (r, c) => (r._1 + c._1, r._2 + c._2)
       }
     }
 
+    def validateNumbers(): Boolean = {
+      true // TODO
+    }
 
     // Recursive solver
     def solveStep(): Option[Puzzle] = {
       val curr = currPosition()
-      if (curr == start) return Option(this)
+      if (curr == start) {
+        if(validateNumbers()) return Option(this)
+        else return None
+      }
+
       val (x, y) = curr
       if (x < 0 || y < 0 || x > width || y > height) return None
 
@@ -94,8 +99,10 @@ object Solver {
     }
 
     override def toString: String = {
+      // Create pairs of two points: Each end of a line segment.
       val slidingCoords = linkCoords.sliding(2).toList
 
+      // Filter out and organize horizontal and vertical lines.
       val horizontalLines: List[(Int, Int)] = slidingCoords.
         filter(pair => pair.head._2 == pair(1)._2).
         map(pair => (Math.min(pair.head._1, pair(1)._1), pair(1)._2))
@@ -104,9 +111,9 @@ object Solver {
         filter(pair => pair.head._1 == pair(1)._1).
         map(pair => (pair(1)._1, Math.min(pair.head._2, pair(1)._2)))
 
+      // Construct nested lists of strings based on where we have lines or not.
       val out = List.fill(height+1)("").zipWithIndex.map {
         case (s, iy: Int) =>
-
           List(
             List.fill(width+1)("").zipWithIndex.map {
               case (s2, ix: Int) => {
@@ -125,10 +132,12 @@ object Solver {
           )
       }
 
+      // Combine all the small strings to one, with line breaks etc.
       val asString = out.map(doubleLine => doubleLine.map(
         line => line.mkString("")).mkString("\n")).mkString("\n")
 
-      s"$width x $height\n$asString"
+      // Provide correct output. Trim to avoid line with only spaces at the end.
+      s"$width x $height\n${asString.trim}"
     }
   }
 
