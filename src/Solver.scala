@@ -90,13 +90,10 @@ object Solver {
           println(newBoard)
 
           side match {
-            case Top => newBoard.solveStep(x, y, Left)
-            case Left => newBoard.solveStep(x, y, Bottom)
-            case Bottom => newBoard.solveStep(x, y, Right)
-            case Right => newBoard.solveStep(x + 1, y, Top).orElse(
-              newBoard.solveStep(x, y - 1, Top).orElse(
-                newBoard.solveStep(x - 1, y, Top).orElse(
-                  newBoard.solveStep(x, y + 1, Top))))
+            case Top => newBoard.solveStep(x, y, Left).orElse(newBoard.solveStep(x, y, Right))
+            case Left => newBoard.solveStep(x, y, Top).orElse(newBoard.solveStep(x, y, Bottom))
+            case Bottom => newBoard.solveStep(x, y, Left).orElse(newBoard.solveStep(x, y, Right))
+            case Right => newBoard.solveStep(x, y, Top).orElse(newBoard.solveStep(x, y, Bottom))
           }
         }
       }
@@ -115,14 +112,14 @@ object Solver {
       val x = idx % (width + 1)
       val y = idx / (height + 1)
 
-      //val startBoard = new Board(width, height, rows, (x, y, Top))
+      val startBoard = new Board(width, height, rows, (x, y, Top))
 
       // Solve!
       println(s"Starting at ($x, $y)")
-      new Board(width, height, rows, (x, y, Top)).solveStep(x, y, Top).orElse(
-        new Board(width, height, rows, (x, y, Left)).solveStep(x, y, Left).orElse(
-          new Board(width, height, rows, (x, y, Right)).solveStep(x, y, Right).orElse(
-            new Board(width, height, rows, (x, y, Bottom)).solveStep(x, y, Bottom)))).get
+      startBoard.solveStep(x, y, Top).orElse(
+        startBoard.solveStep(x, y, Left).orElse(
+          startBoard.solveStep(x, y, Right).orElse(
+            startBoard.solveStep(x, y, Bottom)))).get
     }
 
     def toStringInput: String = {
