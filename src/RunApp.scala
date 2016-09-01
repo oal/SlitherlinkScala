@@ -11,9 +11,10 @@ object RunApp extends App {
   import java.io.File
 
   val dir = new File(inputdir)
-  for (f <- dir.listFiles()) {
+  solveSlitherLinks(dir.listFiles().head)
+  /*for (f <- dir.listFiles()) {
     solveSlitherLinks(f)
-  }
+  }*/
 
 
 
@@ -24,8 +25,8 @@ object RunApp extends App {
     val numPuzzles = lines.head
 
     val boards = Solver.parseBoards(lines.tail)
-    //println(boards.head)
-    boards.map(b => b.solve()).foreach(println)
+    println(boards.head.solve())
+    //boards.map(b => b.solve()).foreach(println)
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
     out.print(numPuzzles + "\n")

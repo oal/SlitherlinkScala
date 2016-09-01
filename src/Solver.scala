@@ -1,5 +1,7 @@
 import Solver.Direction.Direction
 
+import scala.annotation.tailrec
+
 object Solver {
 
   // Because apparently this is how scala does enums.
@@ -11,8 +13,8 @@ object Solver {
   class Puzzle(val width: Int,
                val height: Int,
                val rows: List[List[Option[Int]]],
-               start: (Int, Int),
-               link: List[Direction]) {
+               val start: (Int, Int),
+               val link: List[Direction]) {
 
     import Direction._
 
@@ -35,8 +37,6 @@ object Solver {
     }
 
     def linkCoords: List[(Int, Int)] = {
-      val (sx, sy) = start
-
       val steps = link.map {
         case Up => (0, -1)
         case Down => (0, 1)
@@ -51,29 +51,96 @@ object Solver {
       }
     }
 
+    def lineSegments(): List[List[(Int, Int)]] = {
+      linkCoords.sliding(2).toList
+    }
+
+    def countLines(x: Int, y: Int): Int = {
+      val els = List(
+        List((x, y), (x+1, y)),
+        List((x+1, y), (x, y)),
+
+        List((x, y), (x, y+1)),
+        List((x, y+1), (x, y)),
+
+        List((x+1, y), (x+1, y+1)),
+        List((x+1, y+1), (x+1, y)),
+
+        List((x, y+1), (x+1, y+1)),
+        List((x+1, y+1), (x, y+1))
+      ).toSet
+
+      lineSegments().toSet.intersect(els).size
+    }
+
+    def lastMoveLegal(): Boolean = {
+      val segments = lineSegments()
+
+      val last = segments.last
+      val lastReverse = List(last(1), last.head)
+
+      val rest = segments.drop(1).dropRight(1).toSet
+      val checkSegments = Set(
+        last,
+        lastReverse,
+        List(last(1), (last(1)._1+1, last(1)._2)),
+        List(last(1), (last(1)._1, last(1)._2+1)),
+        List(last(1), (last(1)._1-1, last(1)._2)),
+        List(last(1), (last(1)._1, last(1)._2-1))
+      )
+
+      rest.intersect(checkSegments).isEmpty
+    }
+
     def validateNumbers(): Boolean = {
-      true // TODO
+      val matches = (0 until height).map(y => (0 until width).map(x => {
+        val num = getNumber(x, y)
+        if (num.isDefined) {
+          val neededNum = num.get
+          //println(x, y, neededNum, countLines(x, y))
+          countLines(x, y) == neededNum
+        }
+        else true
+      }).find(el => !el)).find(el => el.isDefined && !el.get)
+
+      matches.isEmpty
     }
 
     // Recursive solver
-    def solveStep(): Option[Puzzle] = {
+    private def solveStep(): Option[Puzzle] = {
       val curr = currPosition()
+      val (x, y) = curr
+      if (x < 0 || y < 0 || x > width || y > height) return None
+
+      if(!lastMoveLegal()) return None
+
       if (curr == start) {
+        //val r = scala.util.Random
+        //val i = r.nextInt(100000)
+        //if(i >= 99990) println(this)
+        //println(validateNumbers())
+        //println(lineSegments())
+        //println(countLines(0, 0), "LINES")
         if(validateNumbers()) return Option(this)
         else return None
       }
 
-      val (x, y) = curr
-      if (x < 0 || y < 0 || x > width || y > height) return None
-
-      val next = link.last match {
+      /*val next = link.last match {
         case Up => Stream(Up, Left, Right)
         case Down => Stream(Down, Left, Right)
         case Left => Stream(Left, Up, Down)
         case Right => Stream(Right, Up, Down)
-      }
+      }*/
 
-      next.map(dir => new Puzzle(width, height, rows, start, link ++ List(dir)).solveStep()).find(_.isDefined).get
+      new Puzzle(width, height, rows, start, link ++ List(Up)).solveStep().orElse(
+        new Puzzle(width, height, rows, start, link ++ List(Right)).solveStep().orElse(
+          new Puzzle(width, height, rows, start, link ++ List(Down)).solveStep().orElse(
+            new Puzzle(width, height, rows, start, link ++ List(Left)).solveStep()
+          )
+        )
+      )
+
+      //next.map(dir => new Puzzle(width, height, rows, start, link ++ List(dir)).solveStep()).find(_.isDefined).get
     }
 
     def solve(): Puzzle = {
@@ -100,7 +167,7 @@ object Solver {
 
     override def toString: String = {
       // Create pairs of two points: Each end of a line segment.
-      val slidingCoords = linkCoords.sliding(2).toList
+      val slidingCoords = lineSegments()
 
       // Filter out and organize horizontal and vertical lines.
       val horizontalLines: List[(Int, Int)] = slidingCoords.
