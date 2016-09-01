@@ -16,14 +16,10 @@ object RunApp extends App {
     solveSlitherLinks(f)
   }*/
 
-
-
-
   def solveSlitherLinks(f: File): Unit = {
     println(f.getName)
     val lines = scala.io.Source.fromFile(f).mkString.split("\n").toList
     val numPuzzles = lines.head
-
     val boards = Solver.parseBoards(lines.tail)
     println(boards.head.solve())
     //boards.map(b => b.solve()).foreach(println)
