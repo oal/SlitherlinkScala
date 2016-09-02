@@ -1,89 +1,84 @@
-import Solver.Direction.Direction
-
-import scala.annotation.tailrec
 
 object Solver {
 
-  // Because apparently this is how scala does enums.
-  object Direction extends Enumeration {
-    type Direction = Value
-    val Up, Down, Left, Right = Value
+  def possibleSolutionsN(n: Int) = {
+    n match {
+      case 0 => List(
+        (false, false, false, false)
+      )
+      case 1 => List(
+        (true, false, false, false),
+        (false, true, false, false),
+        (false, false, true, false),
+        (false, false, false, true)
+      )
+      case 2 => List(
+        (true, true, false, false),
+        (false, false, true, true),
+        (true, false, true, false),
+        (true, false, false, true),
+        (false, true, false, true),
+        (false, true, true, false)
+      )
+      case 3 => List(
+        (true, true, true, false),
+        (true, false, true, true),
+        (true, true, false, true),
+        (false, true, true, true)
+      )
+      case 4 => List(
+        (true, true, true, true)
+      )
+    }
+  }
+
+  case class Square(x: Int, y: Int, number: Option[Int], possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)] = List()) {
+    val solutions = if (possibleSolutions.nonEmpty) possibleSolutions
+    else if (number.isDefined) possibleSolutionsN(number.get)
+    else (0 to 4).toList.flatMap(n => possibleSolutionsN(n))
+
+    def isSolved = solutions.length == 1
+
+    def setTop() = Square(x, y, number, solutions.filter(s => s._1))
+
+    def setRight() = Square(x, y, number, solutions.filter(s => s._2))
+
+    def setBottom() = Square(x, y, number, solutions.filter(s => s._3))
+
+    def setLeft() = Square(x, y, number, solutions.filter(s => s._4))
+
+    override def toString: String = {
+      solutions.map(s => {
+        s"+${if (s._1) "-" else " "}+\n${if (s._4) "|" else " "} ${if (s._2) "|" else " "}\n+${if (s._3) "-" else " "}+"
+      }).mkString("\n\n")
+    }
   }
 
   class Puzzle(val width: Int,
                val height: Int,
-               val numbers: List[List[Option[Int]]],
-               val linesHorizontal: List[List[Boolean]],
-               val linesVertical: List[List[Boolean]],
-               val solveIdx: Int = 0,
-               val config: Int = 0
+               val squares: List[Square]
               ) {
 
-    def setHorizontal(x: Int, y: Int): List[List[Boolean]] = {
-      if (x < 0 || y < 0 || x >= width || y >= height) return linesHorizontal
-      val mutLine = linesHorizontal(y)
 
-      linesHorizontal.take(y) ++ List(
-        mutLine.take(x) ++ List(true) ++ mutLine.drop(x + 1)
-      ) ++ linesHorizontal.drop(y + 1)
+    def solve(): Puzzle = {
+      this
     }
 
-    def setVertical(x: Int, y: Int): List[List[Boolean]] = {
-      if (x < 0 || y < 0 || x >= width || y >= height) return linesVertical
-      val mutLine = linesVertical(x)
-
-      linesVertical.take(x) ++ List(
-        mutLine.take(y) ++ List(true) ++ mutLine.drop(y + 1)
-      ) ++ linesVertical.drop(x + 1)
-    }
-
-    @tailrec final def solve(): Puzzle = {
-      println("------------------------")
-      println(this)
-      println(solveIdx, config, (solveIdx % (width), solveIdx / height))
-      if (solveIdx >= width * height) this
-      else {
-        val useConfig = config match {
-          case 0 => List() // Leave empty
-          case 1 => List((-1, 0), (0, -1)) // Left, up
-          case 2 => List((1, 0), (0, -1)) // Right, up
-          case 3 => List((-1, 0), (0, 1)) // Left, down
-          case 4 => List((1, 0), (0, 1)) // Right, down
-        }
-
-        val nextConfig = (config+1)%5
-        val nextSolveIdx = if(config > 0 && nextConfig == 0) solveIdx + 1 else solveIdx
-
-        if (useConfig.nonEmpty) {
-          val x = solveIdx % (width)
-          val y = solveIdx / height
-          val newVert = setVertical(x, y + useConfig(1)._2)
-          val newHoriz = setHorizontal(x + useConfig.head._1, y)
-          new Puzzle(width, height, numbers, newHoriz, newVert, nextSolveIdx, nextConfig).solve()
-        } else new Puzzle(width, height, numbers, linesHorizontal, linesVertical, nextSolveIdx, nextConfig).solve()
-      }
+    def getSquare(x: Int, y: Int) = {
+      squares.filter(s => s.x == x && s.y == y).head
     }
 
     override def toString: String = {
-      val horizontal = linesHorizontal.map(line => {
-        "+" + line.map(segment => if (segment) "-" else " ").mkString("+") + "+"
-      })
-      val vertical = (0 until height).map(i => {
-        linesVertical.map(line => line(i)).map(segment => if (segment) "|" else " ").mkString(" ")
-      })
-
-      s"${width}x${height}\n" + (0 until height).map(i => {
-        horizontal(i) + "\n" + vertical(i)
-      }).mkString("\n") + "\n" + List.fill(width + 1)("+").mkString(" ") + "\n"
+      s"${width}x$height\n${squares.map(s => s"${s.x}x${s.y} (${s.solutions.length} possible solutions)\n$s").mkString("\n_____\n")}"
     }
   }
 
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
-    val nums = lines.map(line => line.split(" ").toList.map(s => Utils.toInt(s)))
-    val linesHorizontal = (0 until height).toList.map(x => List.fill(width)(false))
-    val linesVertical = (0 until width + 1).toList.map(y => List.fill(height)(false))
+    val numbers = lines.map(line => line.split(" ").toList.map(s => Utils.toInt(s)))
 
-    new Puzzle(width, height, nums, linesHorizontal, linesVertical)
+    val squares = (0 until height).flatMap(y => (0 until width).map(x => Square(x, y, numbers(y)(x))).toList).toList
+
+    new Puzzle(width, height, squares)
   }
 
   def parseBoards(lines: List[String]): List[Puzzle] = {
