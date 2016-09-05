@@ -21,8 +21,7 @@ object RunApp extends App {
     val lines = scala.io.Source.fromFile(f).mkString.split("\n").toList
     val numPuzzles = lines.head
     val boards = Solver.parseBoards(lines.tail)
-    println(boards.head.solve())
-    //boards.map(b => b.solve()).foreach(println)
+    boards.map(b => b.solve()).foreach(println)
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
     out.print(numPuzzles + "\n")
