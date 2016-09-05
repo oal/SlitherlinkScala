@@ -187,16 +187,19 @@ object Solver {
 
     // Validation
     def evenLines(): Boolean = {
-      if(!vertical.forall(line => line.count(_ == true) % 2 == 0)) false
-      if(!(0 until width).forall(x => (0 to height).map(y => horizontal(y)(x)).count(_ == true) % 2 == 0)) false
+      if (!vertical.forall(line => line.count(_ == true) % 2 == 0)) false
+      if (!(0 until width).forall(x => (0 to height).map(y => horizontal(y)(x)).count(_ == true) % 2 == 0)) false
       else true
     }
 
     def allHaveTwoNeighbors(): Boolean = {
-      for(y <- 0 until height) {
-        for(x <- 0 until width) {
-          println(x, y, List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)))
-          if(List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)).count(_==true) != 2) return false
+      for (y <- 0 until height) {
+        for (x <- 0 until width) {
+          if(y > 2) {
+            println(x, y)
+            println(this)
+          }
+          if (List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)).count(_ == true) != 2) return false
         }
       }
       true
@@ -222,19 +225,22 @@ object Solver {
 
     // Getters to check if a n "intersection" has lines going out from it
     def hasUp(x: Int, y: Int): Boolean = {
-      if(y <= 0) false
-      else vertical(y-1)(x)
+      if (y <= 0) false
+      else vertical(y - 1)(x)
     }
+
     def hasDown(x: Int, y: Int): Boolean = {
-      if(y >= height) false
+      if (y >= height) false
       else vertical(y)(x)
     }
+
     def hasLeft(x: Int, y: Int): Boolean = {
-      if(x <= 0) false
-      else horizontal(y)(x-1)
+      if (x <= 0) false
+      else horizontal(y)(x - 1)
     }
+
     def hasRight(x: Int, y: Int): Boolean = {
-      if(x >= width || y >= height) false
+      if (x >= width || y >= height) false
       else horizontal(y)(x)
     }
 
@@ -267,23 +273,32 @@ object Solver {
       })
     }
 
-    @tailrec private def bruteforce():Unit = {
+    @tailrec private def bruteforce(): Unit = {
       val r = new Random()
       for (y <- 0 until height) {
         for (x <- 0 until width) {
           val s = getSquare(x, y)
           if (!s.isSolved) {
             // TODO: Consider what was chosen for neighbor tiles before choosing solution.
-            val solution = s.possibleSolutions(r.nextInt(s.possibleSolutions.length))
-            setTop(x, y, solution._1)
-            setRight(x, y, solution._2)
-            setBottom(x, y, solution._3)
-            setLeft(x, y, solution._4)
+            val possibleSolutions = if (x > 0 && y > 0) {
+              s.setTopKnown(getTop(x, y - 1)).setLeftKnown(getLeft(x - 1, y)).possibleSolutions
+            } else if (y == 0 && x > 0) {
+              s.setLeftKnown(getLeft(x - 1, y)).possibleSolutions
+            } else {
+              s.possibleSolutions
+            }
+            if (possibleSolutions.nonEmpty) {
+              val solution = possibleSolutions(r.nextInt(possibleSolutions.length))
+              setTop(x, y, solution._1)
+              setRight(x, y, solution._2)
+              setBottom(x, y, solution._3)
+              setLeft(x, y, solution._4)
+            }
           }
         }
       }
 
-      if(evenLines() && allHaveTwoNeighbors()) return
+      if (evenLines() && allHaveTwoNeighbors()) return
       else bruteforce()
     }
 
