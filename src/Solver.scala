@@ -1,3 +1,4 @@
+import scala.annotation.tailrec
 import scala.util.Random
 
 class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)]) {
@@ -95,7 +96,6 @@ object Solver {
       }
 
       bruteforce()
-
       this
     }
 
@@ -185,6 +185,23 @@ object Solver {
       }
     }
 
+    // Validation
+    def evenLines(): Boolean = {
+      if(!vertical.forall(line => line.count(_ == true) % 2 == 0)) false
+      if(!(0 until width).forall(x => (0 to height).map(y => horizontal(y)(x)).count(_ == true) % 2 == 0)) false
+      else true
+    }
+
+    def allHaveTwoNeighbors(): Boolean = {
+      for(y <- 0 until height) {
+        for(x <- 0 until width) {
+          println(x, y, List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)))
+          if(List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)).count(_==true) != 2) return false
+        }
+      }
+      true
+    }
+
     // Getters and setters
     def numLinesAt(x: Int, y: Int) = {
       List(horizontal(y)(x), horizontal(y + 1)(x), vertical(y)(x), vertical(y)(x + 1)).count _
@@ -194,13 +211,32 @@ object Solver {
 
     def getSquare(x: Int, y: Int) = squares(y * width + x)
 
-    def getTop(x: Int, y: Int) = horizontal(y)(x)
+    // Getters to check if a square has lines around it
+    def getTop(x: Int, y: Int): Boolean = horizontal(y)(x)
 
-    def getBottom(x: Int, y: Int) = getTop(x, y + 1)
+    def getBottom(x: Int, y: Int): Boolean = getTop(x, y + 1)
 
-    def getLeft(x: Int, y: Int) = vertical(y)(x)
+    def getLeft(x: Int, y: Int): Boolean = vertical(y)(x)
 
-    def getRight(x: Int, y: Int) = getLeft(x + 1, y)
+    def getRight(x: Int, y: Int): Boolean = getLeft(x + 1, y)
+
+    // Getters to check if a n "intersection" has lines going out from it
+    def hasUp(x: Int, y: Int): Boolean = {
+      if(y <= 0) false
+      else vertical(y-1)(x)
+    }
+    def hasDown(x: Int, y: Int): Boolean = {
+      if(y >= height) false
+      else vertical(y)(x)
+    }
+    def hasLeft(x: Int, y: Int): Boolean = {
+      if(x <= 0) false
+      else horizontal(y)(x-1)
+    }
+    def hasRight(x: Int, y: Int): Boolean = {
+      if(x >= width || y >= height) false
+      else horizontal(y)(x)
+    }
 
     def setSquare(x: Int, y: Int, square: Square) = squares(y * width + x) = square
 
@@ -231,12 +267,13 @@ object Solver {
       })
     }
 
-    def bruteforce() = {
+    @tailrec private def bruteforce():Unit = {
       val r = new Random()
       for (y <- 0 until height) {
         for (x <- 0 until width) {
           val s = getSquare(x, y)
           if (!s.isSolved) {
+            // TODO: Consider what was chosen for neighbor tiles before choosing solution.
             val solution = s.possibleSolutions(r.nextInt(s.possibleSolutions.length))
             setTop(x, y, solution._1)
             setRight(x, y, solution._2)
@@ -245,13 +282,16 @@ object Solver {
           }
         }
       }
+
+      if(evenLines() && allHaveTwoNeighbors()) return
+      else bruteforce()
     }
 
     // ToString and parsing
     override def toString: String = {
       val board = (0 until height).map(y => {
         val horiz = (0 until width).map(x => if (getTop(x, y)) "-" else " ").mkString("+")
-        val verti = (0 until width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ") // to or until?
+        val verti = (0 to width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ") // to or until?
 
         s"+$horiz+\n$verti"
       }).mkString("\n")
