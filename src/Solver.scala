@@ -1,12 +1,19 @@
 
 
-class Square(val number: Option[Int], val possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)]) {
+class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)]) {
   def isSolved = possibleSolutions.length == 1
 
-  def setTopKnown(state: Boolean) = new Square(number, possibleSolutions.filter(p => p._1 == state))
-  def setRightKnown(state: Boolean) = new Square(number, possibleSolutions.filter(p => p._2 == state))
-  def setBottomKnown(state: Boolean) = new Square(number, possibleSolutions.filter(p => p._3 == state))
-  def setLeftKnown(state: Boolean) = new Square(number, possibleSolutions.filter(p => p._4 == state))
+  def solution = possibleSolutions.head
+
+  def setTopKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._1 == state))
+
+  def setRightKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._2 == state))
+
+  def setBottomKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._3 == state))
+
+  def setLeftKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._4 == state))
+
+  override def toString: String = s"$x x $y (${possibleSolutions.length} solutions): $possibleSolutions"
 }
 
 
@@ -49,25 +56,35 @@ object Solver {
                var horizontal: List[List[Boolean]],
                var vertical: List[List[Boolean]]
               ) {
-
-
+    
     // Solve puzzle
     def solve(): Puzzle = {
-      squares.foreach(s => print(s.possibleSolutions.length + ", "))
+      squares.foreach(s => println(s))
       println("\n\nOnes in corners")
 
-      // Apply rules
+      // Apply rules (independent of existing knowledge)
       onesInCorners()
-      squares.foreach(s => print(s.possibleSolutions.length + ", "))
+      squares.foreach(s => println(s))
       println("\n\nTwos in corners")
 
       twosInCorners()
-      squares.foreach(s => print(s.possibleSolutions.length + ", "))
+      squares.foreach(s => println(s))
       println("\n\nThrees in corners")
 
       threesInCorners()
-      squares.foreach(s => print(s.possibleSolutions.length + ", "))
+      squares.foreach(s => println(s))
       println("\n")
+
+      // Update board based on what we know now.
+      updateLinesWithSolutions()
+
+      // Apply position dependent rules (none yet)
+      for(y <- 0 until height) {
+        for(x <- 0 until width) {
+          threeAboveZero(x, y)
+          threeNextToThree(x, y)
+        }
+      }
 
       this
     }
@@ -79,20 +96,20 @@ object Solver {
         val topLeftFiltered = topFiltered.setLeftKnown(false)
         setSquare(0, 0, topLeftFiltered)
       }
-      if (getSquare(width-1, 0).number.contains(1)) {
-        val topFiltered = getSquare(width-1, 0).setTopKnown(false)
+      if (getSquare(width - 1, 0).number.contains(1)) {
+        val topFiltered = getSquare(width - 1, 0).setTopKnown(false)
         val topRightFiltered = topFiltered.setRightKnown(false)
-        setSquare(width-1, 0, topRightFiltered)
+        setSquare(width - 1, 0, topRightFiltered)
       }
-      if (getSquare(0, height-1).number.contains(1)) {
-        val bottomFiltered = getSquare(0, height-1).setBottomKnown(false)
+      if (getSquare(0, height - 1).number.contains(1)) {
+        val bottomFiltered = getSquare(0, height - 1).setBottomKnown(false)
         val bottomLeftFiltered = bottomFiltered.setLeftKnown(false)
-        setSquare(0, height-1, bottomLeftFiltered)
+        setSquare(0, height - 1, bottomLeftFiltered)
       }
-      if (getSquare(width-1, height-1).number.contains(1)) {
-        val bottomFiltered = getSquare(width-1, height-1).setBottomKnown(false)
+      if (getSquare(width - 1, height - 1).number.contains(1)) {
+        val bottomFiltered = getSquare(width - 1, height - 1).setBottomKnown(false)
         val bottomRightFiltered = bottomFiltered.setRightKnown(false)
-        setSquare(width-1, height-1, bottomRightFiltered)
+        setSquare(width - 1, height - 1, bottomRightFiltered)
       }
     }
 
@@ -101,17 +118,17 @@ object Solver {
         setSquare(1, 0, getSquare(1, 0).setTopKnown(true))
         setSquare(0, 1, getSquare(0, 1).setLeftKnown(true))
       }
-      if (getSquare(width-1, 0).number.contains(2)) {
-        setSquare(width-2, 0, getSquare(width-2, 0).setTopKnown(true))
-        setSquare(width-1, 1, getSquare(width-1, 1).setRightKnown(true))
+      if (getSquare(width - 1, 0).number.contains(2)) {
+        setSquare(width - 2, 0, getSquare(width - 2, 0).setTopKnown(true))
+        setSquare(width - 1, 1, getSquare(width - 1, 1).setRightKnown(true))
       }
-      if (getSquare(0, height-1).number.contains(2)) {
-        setSquare(2, height-1, getSquare(2, height-1).setBottomKnown(true))
-        setSquare(0, height-2, getSquare(0, height-2).setLeftKnown(true))
+      if (getSquare(0, height - 1).number.contains(2)) {
+        setSquare(2, height - 1, getSquare(2, height - 1).setBottomKnown(true))
+        setSquare(0, height - 2, getSquare(0, height - 2).setLeftKnown(true))
       }
-      if (getSquare(width-1, height-1).number.contains(2)) {
-        setSquare(width-2, height-1, getSquare(width-2, height-1).setBottomKnown(true))
-        setSquare(width-1, height-2, getSquare(width-1, height-2).setRightKnown(true))
+      if (getSquare(width - 1, height - 1).number.contains(2)) {
+        setSquare(width - 2, height - 1, getSquare(width - 2, height - 1).setBottomKnown(true))
+        setSquare(width - 1, height - 2, getSquare(width - 1, height - 2).setRightKnown(true))
       }
     }
 
@@ -121,20 +138,40 @@ object Solver {
         val topLeftFiltered = topFiltered.setLeftKnown(true)
         setSquare(0, 0, topLeftFiltered)
       }
-      if (getSquare(width-1, 0).number.contains(3)) {
-        val topFiltered = getSquare(width-1, 0).setTopKnown(true)
+      if (getSquare(width - 1, 0).number.contains(3)) {
+        val topFiltered = getSquare(width - 1, 0).setTopKnown(true)
         val topRightFiltered = topFiltered.setRightKnown(true)
-        setSquare(width-1, 0, topRightFiltered)
+        setSquare(width - 1, 0, topRightFiltered)
       }
-      if (getSquare(0, height-1).number.contains(3)) {
-        val bottomFiltered = getSquare(0, height-1).setBottomKnown(true)
+      if (getSquare(0, height - 1).number.contains(3)) {
+        val bottomFiltered = getSquare(0, height - 1).setBottomKnown(true)
         val bottomLeftFiltered = bottomFiltered.setLeftKnown(true)
-        setSquare(0, height-1, bottomLeftFiltered)
+        setSquare(0, height - 1, bottomLeftFiltered)
       }
-      if (getSquare(width-1, height-1).number.contains(3)) {
-        val bottomFiltered = getSquare(width-1, height-1).setBottomKnown(true)
+      if (getSquare(width - 1, height - 1).number.contains(3)) {
+        val bottomFiltered = getSquare(width - 1, height - 1).setBottomKnown(true)
         val bottomRightFiltered = bottomFiltered.setRightKnown(true)
-        setSquare(width-1, height-1, bottomRightFiltered)
+        setSquare(width - 1, height - 1, bottomRightFiltered)
+      }
+    }
+
+    // Position dependent rules
+    def threeAboveZero(x: Int, y: Int): Unit = {
+      if(!(isOnBoard(x-1, y) && isOnBoard(x+1, y) && isOnBoard(x, y+1))) return
+
+      if(getSquare(x, y).number.contains(3) && getSquare(x, y+1).number.contains(0)) {
+        setSquare(x, y, getSquare(x, y).setTopKnown(true).setLeftKnown(true).setRightKnown(true))
+        setSquare(x-1, y, getSquare(x-1, y).setBottomKnown(true).setRightKnown(true))
+        setSquare(x+1, y, getSquare(x+1, y).setBottomKnown(true).setLeftKnown(true))
+      }
+    }
+
+    def threeNextToThree(x: Int, y: Int): Unit = {
+      if(isOnBoard(x+1, y)) return
+
+      if(getSquare(x, y).number.contains(3) && getSquare(x+1, y).number.contains(3)) {
+        setSquare(x, y, getSquare(x, y).setLeftKnown(true).setRightKnown(true))
+        setSquare(x+1, y, getSquare(x+1, y).setLeftKnown(true).setRightKnown(true))
       }
     }
 
@@ -142,6 +179,8 @@ object Solver {
     def numLinesAt(x: Int, y: Int) = {
       List(horizontal(y)(x), horizontal(y + 1)(x), vertical(y)(x), vertical(y)(x + 1)).count _
     }
+
+    def isOnBoard(x: Int, y: Int) = !(x < 0 || y < 0 || x >= width || y >= height)
 
     def getSquare(x: Int, y: Int) = squares(y * width + x)
 
@@ -173,6 +212,15 @@ object Solver {
       setLeft(x + 1, y, value)
     }
 
+    def updateLinesWithSolutions() = {
+      squares.foreach(s => if (s.isSolved) {
+        setTop(s.x, s.y, s.solution._1)
+        setRight(s.x, s.y, s.solution._2)
+        setBottom(s.x, s.y, s.solution._3)
+        setLeft(s.x, s.y, s.solution._4)
+      })
+    }
+
     // ToString and parsing
     override def toString: String = {
       println(vertical(1))
@@ -190,7 +238,7 @@ object Solver {
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
     val numbers = lines.flatMap(line => line.split(" ").toList.map(s => Utils.toInt(s)))
 
-    val squares = numbers.map(num => new Square(num, genSolutions(num))).toArray
+    val squares = numbers.zipWithIndex.map { case (num, i) => new Square(i % width, i / width, num, genSolutions(num)) }.toArray
     val line = List.fill(width)(false)
     val line2 = List.fill(width + 1)(false)
     new Puzzle(width, height, squares, List.fill(height)(line), List.fill(height)(line2))
