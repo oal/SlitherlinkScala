@@ -1,4 +1,4 @@
-
+import scala.util.Random
 
 class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)]) {
   def isSolved = possibleSolutions.length == 1
@@ -12,6 +12,14 @@ class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSoluti
   def setBottomKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._3 == state))
 
   def setLeftKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._4 == state))
+
+  def maybeTop = possibleSolutions.exists(p => p._1)
+
+  def maybeRight = possibleSolutions.exists(p => p._2)
+
+  def maybeBottom = possibleSolutions.exists(p => p._3)
+
+  def maybeLeft = possibleSolutions.exists(p => p._4)
 
   override def toString: String = s"$x x $y (${possibleSolutions.length} solutions): $possibleSolutions"
 }
@@ -56,7 +64,7 @@ object Solver {
                var horizontal: List[List[Boolean]],
                var vertical: List[List[Boolean]]
               ) {
-    
+
     // Solve puzzle
     def solve(): Puzzle = {
       squares.foreach(s => println(s))
@@ -79,12 +87,14 @@ object Solver {
       updateLinesWithSolutions()
 
       // Apply position dependent rules (none yet)
-      for(y <- 0 until height) {
-        for(x <- 0 until width) {
+      for (y <- 0 until height) {
+        for (x <- 0 until width) {
           threeAboveZero(x, y)
           threeNextToThree(x, y)
         }
       }
+
+      bruteforce()
 
       this
     }
@@ -157,21 +167,21 @@ object Solver {
 
     // Position dependent rules
     def threeAboveZero(x: Int, y: Int): Unit = {
-      if(!(isOnBoard(x-1, y) && isOnBoard(x+1, y) && isOnBoard(x, y+1))) return
+      if (!(isOnBoard(x - 1, y) && isOnBoard(x + 1, y) && isOnBoard(x, y + 1))) return
 
-      if(getSquare(x, y).number.contains(3) && getSquare(x, y+1).number.contains(0)) {
+      if (getSquare(x, y).number.contains(3) && getSquare(x, y + 1).number.contains(0)) {
         setSquare(x, y, getSquare(x, y).setTopKnown(true).setLeftKnown(true).setRightKnown(true))
-        setSquare(x-1, y, getSquare(x-1, y).setBottomKnown(true).setRightKnown(true))
-        setSquare(x+1, y, getSquare(x+1, y).setBottomKnown(true).setLeftKnown(true))
+        setSquare(x - 1, y, getSquare(x - 1, y).setBottomKnown(true).setRightKnown(true))
+        setSquare(x + 1, y, getSquare(x + 1, y).setBottomKnown(true).setLeftKnown(true))
       }
     }
 
     def threeNextToThree(x: Int, y: Int): Unit = {
-      if(isOnBoard(x+1, y)) return
+      if (isOnBoard(x + 1, y)) return
 
-      if(getSquare(x, y).number.contains(3) && getSquare(x+1, y).number.contains(3)) {
+      if (getSquare(x, y).number.contains(3) && getSquare(x + 1, y).number.contains(3)) {
         setSquare(x, y, getSquare(x, y).setLeftKnown(true).setRightKnown(true))
-        setSquare(x+1, y, getSquare(x+1, y).setLeftKnown(true).setRightKnown(true))
+        setSquare(x + 1, y, getSquare(x + 1, y).setLeftKnown(true).setRightKnown(true))
       }
     }
 
@@ -186,11 +196,11 @@ object Solver {
 
     def getTop(x: Int, y: Int) = horizontal(y)(x)
 
-    def getBottom(x: Int, y: Int) = getTop(y + 1, x)
+    def getBottom(x: Int, y: Int) = getTop(x, y + 1)
 
     def getLeft(x: Int, y: Int) = vertical(y)(x)
 
-    def getRight(x: Int, y: Int) = getLeft(y, x + 1)
+    def getRight(x: Int, y: Int) = getLeft(x + 1, y)
 
     def setSquare(x: Int, y: Int, square: Square) = squares(y * width + x) = square
 
@@ -221,17 +231,34 @@ object Solver {
       })
     }
 
+    def bruteforce() = {
+      val r = new Random()
+      for (y <- 0 until height) {
+        for (x <- 0 until width) {
+          val s = getSquare(x, y)
+          if (!s.isSolved) {
+            val solution = s.possibleSolutions(r.nextInt(s.possibleSolutions.length))
+            setTop(x, y, solution._1)
+            setRight(x, y, solution._2)
+            setBottom(x, y, solution._3)
+            setLeft(x, y, solution._4)
+          }
+        }
+      }
+    }
+
     // ToString and parsing
     override def toString: String = {
-      println(vertical(1))
       val board = (0 until height).map(y => {
         val horiz = (0 until width).map(x => if (getTop(x, y)) "-" else " ").mkString("+")
-        val verti = (0 to width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ")
+        val verti = (0 until width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ") // to or until?
 
         s"+$horiz+\n$verti"
       }).mkString("\n")
 
-      s"${width}x$height\n$board"
+      val lastHoriz = (0 until width).map(x => if (getBottom(x, height - 1)) "-" else " ").mkString("+")
+
+      s"${width}x$height\n$board\n+$lastHoriz+"
     }
   }
 
@@ -240,8 +267,8 @@ object Solver {
 
     val squares = numbers.zipWithIndex.map { case (num, i) => new Square(i % width, i / width, num, genSolutions(num)) }.toArray
     val line = List.fill(width)(false)
-    val line2 = List.fill(width + 1)(false)
-    new Puzzle(width, height, squares, List.fill(height)(line), List.fill(height)(line2))
+    val line2 = List.fill(height)(false)
+    new Puzzle(width, height, squares, List.fill(height + 1)(line), List.fill(height)(line2))
   }
 
   def parseBoards(lines: List[String]): List[Puzzle] = {
