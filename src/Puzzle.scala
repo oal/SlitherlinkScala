@@ -8,6 +8,8 @@ class Puzzle(val width: Int,
   def solve(): Puzzle = {
     applyRules()
 
+    println(this)
+
     val link = getFirstSolvedSegment().get // TODO: Error handling?
     solveStep(link).get.sliding(2).foreach(segment => {
       val a = segment.head
@@ -15,15 +17,13 @@ class Puzzle(val width: Int,
 
       val direction = (b._1 - a._1, b._2 - a._2)
       direction match {
-        case (0, -1) => setLeft(a._1, a._2-1, true)
+        case (0, -1) => setLeft(a._1, a._2 - 1, true)
         case (1, 0) => setTop(a._1, a._2, true)
         case (0, 1) => setLeft(a._1, a._2, true)
-        case (-1, 0) => setTop(a._1-1, a._2, true)
+        case (-1, 0) => setTop(a._1 - 1, a._2, true)
         case _ => List()
       }
     })
-
-    println(this)
 
     this
   }
@@ -31,7 +31,7 @@ class Puzzle(val width: Int,
   // Recursive solver
   private def solveStep(link: List[(Int, Int)]): Option[List[(Int, Int)]] = {
     if (link.head == link.last) return Some(link)
-    if(link.count(_==link.last) > 1) return None
+    if (link.count(_ == link.last) > 1) return None
 
     val lastMove = link.takeRight(2)
     val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
@@ -74,15 +74,27 @@ class Puzzle(val width: Int,
   // Rules
   def ruleAdjacent3s() = {
     getNumberCoords(3).foreach(coord => {
+      // Side by side
       val (x, y) = coord
-      if (getNumber(x + 1, y).contains(3)) {
+      if (x < width - 1 && getNumber(x + 1, y).contains(3)) {
         setLeft(x, y, true)
+        setRight(x, y, true)
         setRight(x + 1, y, true)
+
+        if (y > 0) setRight(x, y - 1, false)
+        if (y < height - 1) setRight(x, y + 1, false)
       }
-      if (y > 0) setRight(x, y - 1, false)
-      if (y < height - 1) setRight(x, y + 1, false)
+
+      // Above and beyond
+      if (y < height - 1 && getNumber(x, y + 1).contains(3)) {
+        setTop(x, y, true)
+        setTop(x, y + 1, true)
+        setBottom(x, y + 1, true)
+
+        if (x > 0) setBottom(x - 1, y, false)
+        if (x < width - 1) setBottom(x + 1, y, false)
+      }
     })
-    println(getNumberCoords(3))
   }
 
   def ruleOneInCorner() = {
@@ -147,9 +159,6 @@ class Puzzle(val width: Int,
     ruleOneInCorner()
     ruleTwoInCorner()
     ruleThreeInCorner()
-
-    println(horizontal)
-    println(vertical)
   }
 
 
