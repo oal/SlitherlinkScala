@@ -1,4 +1,4 @@
-
+import scala.annotation.tailrec
 
 
 class Puzzle(val width: Int,
@@ -12,15 +12,70 @@ class Puzzle(val width: Int,
     applyRules()
 
 
+    val link = getFirstSolvedSegment().get // TODO: Error handling?
 
-    solveStep().get
+    solveStep(link).sliding(2).foreach(segment => {
+      val a = segment.head
+      val b = segment.last
+
+      val direction = (b._1 - a._1, b._2 - a._2)
+      direction match {
+        case (0, -1) => setLeft(a._1, a._2-1, true)
+        case (1, 0) => setTop(a._1, a._2, true)
+        case (0, 1) => setLeft(a._1, a._2, true)
+        case (-1, 0) => setTop(a._1-1, a._2, true)
+        case _ => List()
+      }
+    })
+
+    println(this)
+
+    this
   }
 
   // Recursive solver
-  private def solveStep(x: Int = 0, y: Int = 0): Option[Puzzle] = {
+  private def solveStep(link: List[(Int, Int)]): List[(Int, Int)] = {
+    if (link.head == link.last) return link
 
-    println(this)
-    None
+    val lastMove = link.takeRight(2)
+    val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
+
+    val (cx, cy) = link.last
+
+    val allPossibleMoves = direction match {
+      case (0, -1) => List((cx, cy - 1), (cx + 1, cy), (cx - 1, cy))
+      case (1, 0) => List((cx + 1, cy), (cx, cy + 1), (cx, cy - 1))
+      case (0, 1) => List((cx, cy + 1), (cx + 1, cy), (cx - 1, cy))
+      case (-1, 0) => List((cx - 1, cy), (cx, cy + 1), (cx, cy - 1))
+      case _ => List()
+    }
+
+    val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 < width && m._2 < height)
+
+    val possibleMoves = direction match {
+      case (0, -1) => boundedMoves.filter(m => {
+        val line = getLeft(m._1, m._2 - 1)
+        line.contains(true) || line.isEmpty
+      })
+      case (1, 0) => boundedMoves.filter(m => {
+        val line = getTop(m._1, m._2)
+        line.contains(true) || line.isEmpty
+      })
+      case (0, 1) => boundedMoves.filter(m => {
+        val line = getLeft(m._1, m._2)
+        line.contains(true) || line.isEmpty
+      })
+      case (-1, 0) => boundedMoves.filter(m => {
+        val line = getTop(m._1 - 1, m._2)
+        line.contains(true) || line.isEmpty
+      })
+    }
+
+
+    //println(this)
+    //println(link)
+
+    possibleMoves.toStream.map(nextMove => solveStep(link ++ List(nextMove))).head
   }
 
 
@@ -61,17 +116,17 @@ class Puzzle(val width: Int,
     getNumberCoords(2).foreach(coord => {
       val (x, y) = coord
       if (coord == (0, 0)) {
-        setTop(x+1, y, false)
-        setLeft(x, y+1, false)
+        setTop(x + 1, y, false)
+        setLeft(x, y + 1, false)
       } else if (coord == (width - 1, 0)) {
-        setTop(x-1, y, false)
-        setRight(x, y+1, false)
+        setTop(x - 1, y, false)
+        setRight(x, y + 1, false)
       } else if (coord == (width - 1, height - 1)) {
-        setBottom(x-1, y, false)
-        setRight(x, y-1, false)
+        setBottom(x - 1, y, false)
+        setRight(x, y - 1, false)
       } else if (coord == (0, height - 1)) {
-        setBottom(x+1, y, false)
-        setLeft(x, y-1, false)
+        setBottom(x + 1, y, false)
+        setLeft(x, y - 1, false)
       }
     })
   }
@@ -133,6 +188,18 @@ class Puzzle(val width: Int,
 
   def getSideCount(x: Int, y: Int) = {
     List(getTop(x, y), getRight(x, y), getBottom(x, y), getLeft(x, y)).count(_.contains(true))
+  }
+
+  def getFirstSolvedSegment(): Option[List[(Int, Int)]] = {
+    for (y <- 0 until height) {
+      for (x <- 0 until width) {
+        if (getTop(x, y).contains(true)) return Some(List((x, y), (x + 1, y)))
+        if (getRight(x, y).contains(true)) return Some(List((x + 1, y), (x + 1, y + 1)))
+        if (getBottom(x, y).contains(true)) return Some(List((x, y + 1), (x + 1, y + 1)))
+        if (getLeft(x, y).contains(true)) return Some(List((x, y), (x, y + 1)))
+      }
+    }
+    None
   }
 
   def setTop(x: Int, y: Int, value: Boolean) = {
