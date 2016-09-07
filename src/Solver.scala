@@ -2,33 +2,13 @@ object Solver {
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
     // Parse numbers to ints, or use None. Add one cell to the right (see above).
     val numbers = lines.map(line => {
-      line.split(" ").map(s => Utils.toInt(s)).toList ++ List(None)
+      line.split(" ").map(s => Utils.toInt(s)).toList
     })
 
-    // First, find a suitable start position (lowest possible number, but not 0).
-    // Maybe there is a shorter way to achieve this?
-    val minCell = numbers.flatten.minBy(cell => {
-      val num = cell.orElse(Option(0)).get
-      if (num == 0) 5 // Set 0s to 5, as we never want to start at a 0
-      else num // But we want to start at somewhere as low as possible
-    })
+    val hLine = List.fill(width+1)(None)
+    val vLine = List.fill(height+1)(None)
 
-    val idx = numbers.flatten.indexOf(minCell)
-    val x = idx % (width + 1)
-    val y = idx / (height + 1)
-
-    val squares = numbers.flatten.zipWithIndex.map({
-      case (num, i) => {
-        val solutions = Utils.genSolutions(num)
-        val (x, y) = (i % width, i / width)
-
-        new Square(x, y, num, solutions)
-      }
-    }).toArray
-
-    val squareList = new SquareList(width, height, squares)
-
-    new Puzzle(width, height, numbers, squareList, List((x, y)))
+    new Puzzle(width, height, numbers, List.fill(height+1)(hLine), List.fill(width+1)(vLine))
   }
 
   def parseBoards(lines: List[String]): List[Puzzle] = {
