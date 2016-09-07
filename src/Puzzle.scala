@@ -1,6 +1,3 @@
-import scala.annotation.tailrec
-
-
 class Puzzle(val width: Int,
              val height: Int,
              val numbers: List[List[Option[Int]]],
@@ -11,10 +8,8 @@ class Puzzle(val width: Int,
   def solve(): Puzzle = {
     applyRules()
 
-
     val link = getFirstSolvedSegment().get // TODO: Error handling?
-
-    solveStep(link).sliding(2).foreach(segment => {
+    solveStep(link).get.sliding(2).foreach(segment => {
       val a = segment.head
       val b = segment.last
 
@@ -34,8 +29,9 @@ class Puzzle(val width: Int,
   }
 
   // Recursive solver
-  private def solveStep(link: List[(Int, Int)]): List[(Int, Int)] = {
-    if (link.head == link.last) return link
+  private def solveStep(link: List[(Int, Int)]): Option[List[(Int, Int)]] = {
+    if (link.head == link.last) return Some(link)
+    if(link.count(_==link.last) > 1) return None
 
     val lastMove = link.takeRight(2)
     val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
@@ -50,7 +46,7 @@ class Puzzle(val width: Int,
       case _ => List()
     }
 
-    val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 < width && m._2 < height)
+    val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 <= width && m._2 <= height)
 
     val possibleMoves = direction match {
       case (0, -1) => boundedMoves.filter(m => {
@@ -71,11 +67,7 @@ class Puzzle(val width: Int,
       })
     }
 
-
-    //println(this)
-    //println(link)
-
-    possibleMoves.toStream.map(nextMove => solveStep(link ++ List(nextMove))).head
+    possibleMoves.toStream.map(nextMove => solveStep(link ++ List(nextMove))).collectFirst { case p if p.isDefined => p.get }
   }
 
 
