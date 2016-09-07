@@ -1,5 +1,4 @@
 import scala.annotation.tailrec
-import scala.util.Random
 
 class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSolutions: List[(Boolean, Boolean, Boolean, Boolean)]) {
   def isSolved = possibleSolutions.length == 1
@@ -13,6 +12,8 @@ class Square(val x: Int, val y: Int, val number: Option[Int], val possibleSoluti
   def setBottomKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._3 == state))
 
   def setLeftKnown(state: Boolean) = new Square(x, y, number, possibleSolutions.filter(p => p._4 == state))
+
+  def popSolution() = new Square(x, y, number, possibleSolutions.tail)
 
   def maybeTop = possibleSolutions.exists(p => p._1)
 
@@ -95,8 +96,7 @@ object Solver {
         }
       }
 
-      bruteforce()
-      this
+      bruteforce(0, 0).get
     }
 
     // Rules
@@ -195,11 +195,8 @@ object Solver {
     def allHaveTwoNeighbors(): Boolean = {
       for (y <- 0 until height) {
         for (x <- 0 until width) {
-          if(y > 2) {
-            println(x, y)
-            println(this)
-          }
-          if (List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)).count(_ == true) != 2) return false
+          val neighbors = List(hasUp(x, y), hasRight(x, y), hasDown(x, y), hasLeft(x, y)).count(_ == true)
+          if (!(neighbors == 2 || neighbors == 0)) return false
         }
       }
       true
@@ -219,7 +216,9 @@ object Solver {
 
     def getBottom(x: Int, y: Int): Boolean = getTop(x, y + 1)
 
-    def getLeft(x: Int, y: Int): Boolean = vertical(y)(x)
+    def getLeft(x: Int, y: Int): Boolean = {
+      vertical(y)(x)
+    }
 
     def getRight(x: Int, y: Int): Boolean = getLeft(x + 1, y)
 
@@ -273,40 +272,63 @@ object Solver {
       })
     }
 
-    @tailrec private def bruteforce(): Unit = {
-      val r = new Random()
-      for (y <- 0 until height) {
-        for (x <- 0 until width) {
-          val s = getSquare(x, y)
-          if (!s.isSolved) {
-            // TODO: Consider what was chosen for neighbor tiles before choosing solution.
-            val possibleSolutions = if (x > 0 && y > 0) {
-              s.setTopKnown(getTop(x, y - 1)).setLeftKnown(getLeft(x - 1, y)).possibleSolutions
-            } else if (y == 0 && x > 0) {
-              s.setLeftKnown(getLeft(x - 1, y)).possibleSolutions
-            } else {
-              s.possibleSolutions
-            }
-            if (possibleSolutions.nonEmpty) {
-              val solution = possibleSolutions(r.nextInt(possibleSolutions.length))
-              setTop(x, y, solution._1)
-              setRight(x, y, solution._2)
-              setBottom(x, y, solution._3)
-              setLeft(x, y, solution._4)
-            }
-          }
-        }
+    @tailrec private def bruteforce(x: Int, y: Int): Option[Puzzle] = {
+      if (x == width-1 && y == height-1) {
+        if (evenLines() && allHaveTwoNeighbors()) return Some(this)
+        else return None
       }
 
-      if (evenLines() && allHaveTwoNeighbors()) return
-      else bruteforce()
+      val p = new Puzzle(width, height, squares.clone(), horizontal, vertical)
+
+
+      val square = p.getSquare(x, y)
+      if (!square.isSolved) {
+        val solution = square.possibleSolutions.head
+        square.setTopKnown(solution._1).setRightKnown(solution._2).setBottomKnown(solution._3).setLeftKnown(solution._4)
+        p.setSquare(x, y, square.popSolution())
+
+        if (x == 0 && y < height - 1) {
+          val square2 = p.getSquare(x, y + 1)
+          if (!square2.isSolved) {
+            square2.setTopKnown(solution._3)
+            p.setSquare(x, y + 1, square2.popSolution())
+          }
+        }
+        if (x != width - 1) {
+          val square2 = p.getSquare(x + 1, y)
+          if (!square2.isSolved) {
+            square2.setLeftKnown(solution._2)
+            p.setSquare(x + 1, y, square2.popSolution())
+          }
+        }
+
+        p.setTop(x, y, solution._1)
+        p.setRight(x, y, solution._2)
+        p.setBottom(x, y, solution._3)
+        p.setLeft(x, y, solution._4)
+      }
+
+      val (nextX, nextY) = if (p.getSquare(x, y).isSolved) {
+        if (x == width - 1) {
+          (0, y + 1)
+        } else {
+          (x + 1, y)
+        }
+      } else {
+        (x, y)
+      }
+
+      println(x, y)
+      println(p)
+
+      p.bruteforce(nextX, nextY)
     }
 
     // ToString and parsing
     override def toString: String = {
       val board = (0 until height).map(y => {
         val horiz = (0 until width).map(x => if (getTop(x, y)) "-" else " ").mkString("+")
-        val verti = (0 to width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ") // to or until?
+        val verti = (0 until width).map(x => if (getLeft(x, y)) "|" else " ").mkString(" ") // to or until?
 
         s"+$horiz+\n$verti"
       }).mkString("\n")
@@ -322,7 +344,7 @@ object Solver {
 
     val squares = numbers.zipWithIndex.map { case (num, i) => new Square(i % width, i / width, num, genSolutions(num)) }.toArray
     val line = List.fill(width)(false)
-    val line2 = List.fill(height)(false)
+    val line2 = List.fill(height + 1)(false)
     new Puzzle(width, height, squares, List.fill(height + 1)(line), List.fill(height)(line2))
   }
 
