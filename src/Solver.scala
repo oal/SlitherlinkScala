@@ -117,24 +117,20 @@ object Solver {
     // Rules
     def onesInCorners() = {
       if (getSquare(0, 0).number.contains(1)) {
-        val topFiltered = getSquare(0, 0).setTopKnown(false)
-        val topLeftFiltered = topFiltered.setLeftKnown(false)
-        setSquare(0, 0, topLeftFiltered)
+        val filteredSquare = getSquare(0, 0).setTopKnown(false).setLeftKnown(false)
+        setSquare(0, 0, filteredSquare)
       }
       if (getSquare(width - 1, 0).number.contains(1)) {
-        val topFiltered = getSquare(width - 1, 0).setTopKnown(false)
-        val topRightFiltered = topFiltered.setRightKnown(false)
-        setSquare(width - 1, 0, topRightFiltered)
+        val filteredSquare = getSquare(width - 1, 0).setTopKnown(false).setRightKnown(false)
+        setSquare(width - 1, 0, filteredSquare)
       }
       if (getSquare(0, height - 1).number.contains(1)) {
-        val bottomFiltered = getSquare(0, height - 1).setBottomKnown(false)
-        val bottomLeftFiltered = bottomFiltered.setLeftKnown(false)
-        setSquare(0, height - 1, bottomLeftFiltered)
+        val filteredSquare = getSquare(0, height - 1).setBottomKnown(false).setLeftKnown(false)
+        setSquare(0, height - 1, filteredSquare)
       }
       if (getSquare(width - 1, height - 1).number.contains(1)) {
-        val bottomFiltered = getSquare(width - 1, height - 1).setBottomKnown(false)
-        val bottomRightFiltered = bottomFiltered.setRightKnown(false)
-        setSquare(width - 1, height - 1, bottomRightFiltered)
+        val filteredSquare = getSquare(width - 1, height - 1).setBottomKnown(false).setRightKnown(false)
+        setSquare(width - 1, height - 1, filteredSquare)
       }
     }
 
@@ -202,10 +198,7 @@ object Solver {
 
     def isOnBoard(x: Int, y: Int) = !(x < 0 || y < 0 || x >= width || y >= height)
 
-    def getSquare(x: Int, y: Int) = {
-      //if (x < 0 || y < 0 || x >= width || y >= height) println("Square out of bounds!")
-      squares(y * width + x)
-    }
+    def getSquare(x: Int, y: Int) = squares(y * width + x)
 
     def setSquare(x: Int, y: Int, square: Square) = squares(y * width + x) = square
 
@@ -251,7 +244,6 @@ object Solver {
         val num = getNumber(x, y)
         if (num.isDefined) {
           val neededNum = num.get
-          //println(x, y, neededNum, countLines(x, y))
           countLines(x, y) == neededNum
         }
         else true
@@ -267,54 +259,6 @@ object Solver {
         case Down => cy < height && !lastMove.contains(Up) && getSquare(cx, cy).maybeLeft
         case Left => cx > 0 && !lastMove.contains(Right) && getSquare(cx - 1, cy).maybeTop
         case _ => false
-      }
-    }
-
-    // Recursive solver
-    private def solveStep(): Option[Puzzle] = {
-      val (cx, cy) = if (link.nonEmpty) {
-        val curr = currPosition()
-        val (x, y) = curr
-        if (x < 0 || y < 0 || x > width || y > height) return None
-
-        if (!lastMoveLegal()) return None
-
-        if (curr == start) {
-          if (validateNumbers()) return Option(this)
-          else return None
-        }
-
-        (curr._1, curr._2)
-      } else {
-        start
-      }
-
-      val lastMove = link.lastOption
-      val up = if (canMove(cx, cy, Up, lastMove)) List(Up) else List() //if(!lastMove.contains(Down) && cx < width && getSquare(cx, cy).maybeTop) List(Up) else List()
-      val right = if (canMove(cx, cy, Right, lastMove)) List(Right) else List() //if(!lastMove.contains(Left) && cx < width && getSquare(cx, cy).maybeTop) List(Right) else List()
-      val down = if (canMove(cx, cy, Down, lastMove)) List(Down) else List() //if(!lastMove.contains(Up) && cx < width && getSquare(cx, cy).maybeLeft) List(Down) else List()
-      val left = if (canMove(cx, cy, Left, lastMove)) List(Left) else List() //if(!lastMove.contains(Right) && cx < width && getSquare(cx, cy).maybeTop) List(Left) else List()
-
-      // Not pretty, but ... recursion.
-      val directions = List() ++ up ++ right ++ down ++ left
-      directions.length match {
-        case 1 => new Puzzle(width, height, numbers, squares, start, link ++ List(directions.head)).solveStep()
-        case 2 => new Puzzle(width, height, numbers, squares, start, link ++ List(directions.head)).solveStep().orElse(
-          new Puzzle(width, height, numbers, squares, start, link ++ List(directions(1))).solveStep()
-        )
-        case 3 => new Puzzle(width, height, numbers, squares, start, link ++ List(directions.head)).solveStep().orElse(
-          new Puzzle(width, height, numbers, squares, start, link ++ List(directions(1))).solveStep().orElse(
-            new Puzzle(width, height, numbers, squares, start, link ++ List(directions(2))).solveStep()
-          )
-        )
-        case 4 => new Puzzle(width, height, numbers, squares, start, link ++ List(directions.head)).solveStep().orElse(
-          new Puzzle(width, height, numbers, squares, start, link ++ List(directions(1))).solveStep().orElse(
-            new Puzzle(width, height, numbers, squares, start, link ++ List(directions(2))).solveStep().orElse(
-              new Puzzle(width, height, numbers, squares, start, link ++ List(directions(3))).solveStep()
-            )
-          )
-        )
-        case _ => None
       }
     }
 
@@ -344,14 +288,41 @@ object Solver {
       }
 
       solveStep().get
+    }
 
-      /*new Puzzle(width, height, numbers, squares, start, List(Up)).solveStep().orElse(
-        new Puzzle(width, height, numbers, squares, start, List(Right)).solveStep().orElse(
-          new Puzzle(width, height, numbers, squares, start, List(Down)).solveStep().orElse(
-            new Puzzle(width, height, numbers, squares, start, List(Left)).solveStep()
-          )
-        )
-      ).get*/
+    // Recursive solver
+    private def solveStep(): Option[Puzzle] = {
+      val (cx, cy) = if (link.nonEmpty) {
+        val curr = currPosition()
+        val (x, y) = curr
+        if (x < 0 || y < 0 || x > width || y > height) return None
+        //if(countLines(x, y) > getNumber(x, y).getOrElse(4)) return None
+
+        if (!lastMoveLegal()) return None
+
+        if (curr == start) {
+          if (validateNumbers()) return Option(this)
+          else return None
+        }
+
+        (curr._1, curr._2)
+      } else {
+        start
+      }
+
+      // What moves are possible from the current position?
+      val lastMove = link.lastOption
+      val up = if (canMove(cx, cy, Up, lastMove)) List(Up) else List()
+      val right = if (canMove(cx, cy, Right, lastMove)) List(Right) else List()
+      val down = if (canMove(cx, cy, Down, lastMove)) List(Down) else List()
+      val left = if (canMove(cx, cy, Left, lastMove)) List(Left) else List()
+
+      // Build list, and process as stream until first match / solution is returned.
+      val directions = List() ++ up ++ right ++ down ++ left
+
+      directions.toStream.map(dir =>
+        new Puzzle(width, height, numbers, squares, start, link ++ List(dir)).solveStep()
+      ).collectFirst { case p if p.isDefined => p.get }
     }
 
     def toStringInput: String = {
@@ -432,7 +403,14 @@ object Solver {
     val x = idx % (width + 1)
     val y = idx / (height + 1)
 
-    val squares = numbers.flatten.zipWithIndex.map { case (num, i) => new Square(i % width, i / width, num, genSolutions(num)) }.toArray
+    val squares = numbers.flatten.zipWithIndex.map({
+      case (num, i) => {
+        val solutions = genSolutions(num)
+        val (x, y) = (i % width, i / width)
+
+        new Square(x, y, num, solutions)
+      }
+    }).toArray
 
     new Puzzle(width, height, numbers ++ List(bottomCells), squares, (x, y), List())
   }
