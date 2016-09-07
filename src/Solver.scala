@@ -1,10 +1,5 @@
 object Solver {
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
-    // We need a row extra because its' top line will be the above's bottom line.
-    // That's because cells only have top and left lines, so we need partial cells
-    // on the right and bottom.
-    val bottomCells: List[Option[Int]] = List.fill(width + 1)(None)
-
     // Parse numbers to ints, or use None. Add one cell to the right (see above).
     val numbers = lines.map(line => {
       line.split(" ").map(s => Utils.toInt(s)).toList ++ List(None)
@@ -33,7 +28,7 @@ object Solver {
 
     val squareList = new SquareList(width, height, squares)
 
-    new Puzzle(width, height, numbers ++ List(bottomCells), squareList, (x, y), List())
+    new Puzzle(width, height, numbers, squareList, List((x, y)))
   }
 
   def parseBoards(lines: List[String]): List[Puzzle] = {

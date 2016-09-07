@@ -1,11 +1,25 @@
-import Direction._
+
+
+
 
 class Puzzle(val width: Int,
              val height: Int,
              val numbers: List[List[Option[Int]]],
              val squares: SquareList,
-             val start: (Int, Int),
-             val link: List[Direction]) {
+             val link: List[(Int, Int)]) {
+
+  val UP = (0, -1)
+  val RIGHT = (1, 0)
+  val DOWN = (0, 1)
+  val LEFT = (-1, 0)
+
+  def addCoords(a: (Int, Int), b: (Int, Int)) = {
+    (a._1+b._1, a._2 + b._2)
+  }
+
+  def subCoords(a: (Int, Int), b: (Int, Int)) = {
+    (a._1-b._1, a._2 - b._2)
+  }
 
   // Get number inside cell
   def getNumber(x: Int, y: Int): Option[Int] = {
@@ -13,38 +27,16 @@ class Puzzle(val width: Int,
     else numbers(y)(x)
   }
 
-  def currPosition(): (Int, Int) = {
-    val (x, y) = link.map {
-      case Up => (0, -1)
-      case Down => (0, 1)
-      case Left => (-1, 0)
-      case Right => (1, 0)
-      case _ => (0, 0)
-    }.reduce((a, b) => (a._1 + b._1, a._2 + b._2))
-
-    (x + start._1, y + start._2)
-  }
-
-  def linkCoords: List[(Int, Int)] = {
-    val steps = link.map {
-      case Up => (0, -1)
-      case Down => (0, 1)
-      case Left => (-1, 0)
-      case Right => (1, 0)
-      case _ => (0, 0)
-    }
-
-    val withStart: List[(Int, Int)] = start :: steps
-    withStart.drop(1).scanLeft(withStart.head) {
-      case (r, c) => (r._1 + c._1, r._2 + c._2)
-    }
+  def getLastDirection(): Option[(Int, Int)] = {
+    if(link.isEmpty) None
+    else Some(link.takeRight(2).reduce((a, b) => subCoords(b, a)))
   }
 
   def lineSegments(): List[List[(Int, Int)]] = {
-    linkCoords.sliding(2).toList
+    link.sliding(2).toList
   }
 
-  def countLines(x: Int, y: Int): Int = {
+  def countLines(x: Int, y: Int, segmentSet: Set[List[(Int, Int)]]): Int = {
     val els = List(
       List((x, y), (x + 1, y)),
       List((x + 1, y), (x, y)),
@@ -59,7 +51,7 @@ class Puzzle(val width: Int,
       List((x + 1, y + 1), (x, y + 1))
     ).toSet
 
-    lineSegments().toSet.intersect(els).size
+    segmentSet.intersect(els).size
   }
 
   def lastMoveLegal(): Boolean = {
@@ -81,12 +73,15 @@ class Puzzle(val width: Int,
     rest.intersect(checkSegments).isEmpty
   }
 
+  def countCoordUsage(coord: (Int, Int)) = link.drop(1).count(c => c == coord)
+
   def validateNumbers(): Boolean = {
+    val segmentSet = lineSegments().toSet
     val matches = (0 until height).map(y => (0 until width).map(x => {
       val num = getNumber(x, y)
       if (num.isDefined) {
         val neededNum = num.get
-        countLines(x, y) == neededNum
+        countLines(x, y, segmentSet) == neededNum
       }
       else true
     }).find(el => !el)).find(el => el.isDefined && !el.get)
@@ -94,12 +89,12 @@ class Puzzle(val width: Int,
     matches.isEmpty
   }
 
-  def canMove(cx: Int, cy: Int, dir: Direction, lastMove: Option[Direction]): Boolean = {
+  def canMove(cx: Int, cy: Int, dir: (Int, Int), lastMove: Option[(Int, Int)]): Boolean = {
     dir match {
-      case Up => cy > 0 && !lastMove.contains(Down) && squares.getSquare(cx, cy - 1).maybeLeft
-      case Right => cx < width && !lastMove.contains(Left) && squares.getSquare(cx, cy).maybeTop
-      case Down => cy < height && !lastMove.contains(Up) && squares.getSquare(cx, cy).maybeLeft
-      case Left => cx > 0 && !lastMove.contains(Right) && squares.getSquare(cx - 1, cy).maybeTop
+      case UP => cy > 0 && !lastMove.contains(DOWN) && squares.getSquare(cx, cy - 1).maybeLeft
+      case RIGHT => cx < width && !lastMove.contains(LEFT) && squares.getSquare(cx, cy).maybeTop
+      case DOWN => cy < height && !lastMove.contains(UP) && squares.getSquare(cx, cy).maybeLeft
+      case LEFT => cx > 0 && !lastMove.contains(RIGHT) && squares.getSquare(cx - 1, cy).maybeTop
       case _ => false
     }
   }
@@ -111,36 +106,39 @@ class Puzzle(val width: Int,
 
   // Recursive solver
   private def solveStep(): Option[Puzzle] = {
-    val (cx, cy) = if (link.nonEmpty) {
-      val curr = currPosition()
+    //println(link)
+    val (cx, cy) = if (link.length > 1) {
+      val curr = link.last
+      if(countCoordUsage(curr) > 1) return None
+
       val (x, y) = curr
       if (x < 0 || y < 0 || x > width || y > height) return None
       //if(countLines(x, y) > getNumber(x, y).getOrElse(4)) return None
 
-      if (!lastMoveLegal()) return None
+      //if (!lastMoveLegal()) return None
 
-      if (curr == start) {
+      if (curr == link.head) {
         if (validateNumbers()) return Option(this)
         else return None
       }
 
       (curr._1, curr._2)
     } else {
-      start
+      link.head
     }
 
     // What moves are possible from the current position?
-    val lastMove = link.lastOption
-    val up = if (canMove(cx, cy, Up, lastMove)) List(Up) else List()
-    val right = if (canMove(cx, cy, Right, lastMove)) List(Right) else List()
-    val down = if (canMove(cx, cy, Down, lastMove)) List(Down) else List()
-    val left = if (canMove(cx, cy, Left, lastMove)) List(Left) else List()
+    val lastMove = getLastDirection()
+    val up = if (canMove(cx, cy, UP, lastMove)) List(UP) else List()
+    val right = if (canMove(cx, cy, RIGHT, lastMove)) List(RIGHT) else List()
+    val down = if (canMove(cx, cy, DOWN, lastMove)) List(DOWN) else List()
+    val left = if (canMove(cx, cy, LEFT, lastMove)) List(LEFT) else List()
 
     // Build list, and process as stream until first match / solution is returned.
     val directions = List() ++ up ++ right ++ down ++ left
 
     directions.toStream.map(dir =>
-      new Puzzle(width, height, numbers, squares, start, link ++ List(dir)).solveStep()
+      new Puzzle(width, height, numbers, squares, link ++ List(addCoords((cx, cy), dir))).solveStep()
     ).collectFirst { case p if p.isDefined => p.get }
   }
 
