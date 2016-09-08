@@ -1,3 +1,5 @@
+import scala.annotation.tailrec
+
 class Puzzle(val width: Int,
              val height: Int,
              val numbers: List[List[Option[Int]]],
@@ -10,28 +12,22 @@ class Puzzle(val width: Int,
 
     println(this)
 
-    val link = getFirstSolvedSegment().get // TODO: Error handling?
-    solveStep(link).get.sliding(2).foreach(segment => {
-      val a = segment.head
-      val b = segment.last
+    val uniqueSegments = getSolvedSegments().distinct
 
-      val direction = (b._1 - a._1, b._2 - a._2)
-      direction match {
-        case (0, -1) => setLeft(a._1, a._2 - 1, true)
-        case (1, 0) => setTop(a._1, a._2, true)
-        case (0, 1) => setLeft(a._1, a._2, true)
-        case (-1, 0) => setTop(a._1 - 1, a._2, true)
-        case _ => List()
-      }
-    })
+    val link = uniqueSegments.head
 
-    this
+    println("TAIL: ", uniqueSegments.tail)
+    val solvedLink = solveStep(link, uniqueSegments.tail).get
+    this.applyLinkCopy(solvedLink)
   }
 
   // Recursive solver
-  private def solveStep(link: List[(Int, Int)]): Option[List[(Int, Int)]] = {
-    if (link.head == link.last) return Some(link)
-    if (link.count(_ == link.last) > 1) return None
+  private def solveStep(link: List[(Int, Int)], segmentsTail: List[List[(Int, Int)]]): Option[List[(Int, Int)]] = {
+    //if (link.dropRight(1).count(_ == link.last) != 0) return None
+    if (link.head == link.last && segmentsTail.isEmpty) {
+      println(segmentsTail)
+      return Some(link)
+    }
 
     val lastMove = link.takeRight(2)
     val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
@@ -48,26 +44,46 @@ class Puzzle(val width: Int,
 
     val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 <= width && m._2 <= height)
 
+    val nonExistingMoves = boundedMoves.filter(m => m == link.head || !link.contains(m))
+
     val possibleMoves = direction match {
-      case (0, -1) => boundedMoves.filter(m => {
+      case (0, -1) => nonExistingMoves.filter(m => {
         val line = getLeft(m._1, m._2 - 1)
         line.contains(true) || line.isEmpty
       })
-      case (1, 0) => boundedMoves.filter(m => {
+      case (1, 0) => nonExistingMoves.filter(m => {
         val line = getTop(m._1, m._2)
         line.contains(true) || line.isEmpty
       })
-      case (0, 1) => boundedMoves.filter(m => {
+      case (0, 1) => nonExistingMoves.filter(m => {
         val line = getLeft(m._1, m._2)
         line.contains(true) || line.isEmpty
       })
-      case (-1, 0) => boundedMoves.filter(m => {
+      case (-1, 0) => nonExistingMoves.filter(m => {
         val line = getTop(m._1 - 1, m._2)
         line.contains(true) || line.isEmpty
       })
     }
 
-    possibleMoves.toStream.map(nextMove => solveStep(link ++ List(nextMove))).collectFirst { case p if p.isDefined => p.get }
+    val knownMoves = possibleMoves.filter(move => segmentsTail.exists(s =>
+      (s.head == move && s.last == link.last) || (s.head == link.last && s.last == move)))
+
+    val (moves, tail) = if (knownMoves.nonEmpty) {
+      (
+        knownMoves,//.sortBy(m => -segmentsTail.flatten.count(s => s == m)), // HMMMMM.....
+        segmentsTail.filter(s => !link.contains(s.head) && !link.contains(s.last)))
+    } else (possibleMoves, segmentsTail)
+
+    /*println(this.applyLinkCopy(link)) // DEBUG print
+    println("" +
+      s"Link: $link\n" +
+      s"Known moves: $knownMoves\n" +
+      s"Final moves: $moves\n" +
+      s"Tail: $tail\n" +
+      "\n" +
+      "\n")
+*/
+    moves.toStream.map(nextMove => solveStep(link ++ List(nextMove), tail)).collectFirst { case p if p.isDefined => p.get }
   }
 
 
@@ -191,16 +207,27 @@ class Puzzle(val width: Int,
     List(getTop(x, y), getRight(x, y), getBottom(x, y), getLeft(x, y)).count(_.contains(true))
   }
 
-  def getFirstSolvedSegment(): Option[List[(Int, Int)]] = {
-    for (y <- 0 until height) {
-      for (x <- 0 until width) {
-        if (getTop(x, y).contains(true)) return Some(List((x, y), (x + 1, y)))
-        if (getRight(x, y).contains(true)) return Some(List((x + 1, y), (x + 1, y + 1)))
-        if (getBottom(x, y).contains(true)) return Some(List((x, y + 1), (x + 1, y + 1)))
-        if (getLeft(x, y).contains(true)) return Some(List((x, y), (x, y + 1)))
-      }
+  private def getSolvedSegments(x: Int = 0, y: Int = 0, dir: Int = 0, segments: List[List[(Int, Int)]] = List()): List[List[(Int, Int)]] = {
+    if (y >= height) return segments
+
+    val ndir = (dir + 1) % 4
+    val (nx, ny) = if (ndir == 0) {
+      val nx = if (x == width - 1) 0 else x + 1
+      val ny = if (nx > x) y else y + 1
+      (nx, ny)
+    } else {
+      (x, y)
     }
-    None
+
+    val segment = ndir match {
+      case 0 => if (getTop(x, y).contains(true)) Some(List((x, y), (x + 1, y))) else None
+      case 1 => if (getRight(x, y).contains(true)) Some(List((x + 1, y), (x + 1, y + 1))) else None
+      case 2 => if (getBottom(x, y).contains(true)) Some(List((x, y + 1), (x + 1, y + 1))) else None
+      case 3 => if (getLeft(x, y).contains(true)) Some(List((x, y), (x, y + 1))) else None
+      case _ => None
+    }
+
+    if (segment.isDefined) segment.get :: getSolvedSegments(nx, ny, ndir) else getSolvedSegments(nx, ny, ndir)
   }
 
   def setTop(x: Int, y: Int, value: Boolean) = {
@@ -229,7 +256,7 @@ class Puzzle(val width: Int,
         if (top.isDefined) {
           if (top.get) "-" else " "
         } else {
-          "?"
+          " "
         }
       }).mkString("+")
       val verti = (0 to width).map(x => {
@@ -237,7 +264,7 @@ class Puzzle(val width: Int,
         if (left.isDefined) {
           if (left.get) "|" else " "
         } else {
-          "?"
+          " "
         }
       }).mkString(" ") // to or until?
 
@@ -249,10 +276,29 @@ class Puzzle(val width: Int,
       if (bottom.isDefined) {
         if (bottom.get) "-" else " "
       } else {
-        "?"
+        " "
       }
     }).mkString("+")
 
     s"${width}x$height\n$board\n+$lastHoriz+"
+  }
+
+  def applyLinkCopy(link: List[(Int, Int)]) = {
+    val p = new Puzzle(width, height, numbers, vertical, horizontal)
+    link.sliding(2).foreach(segment => {
+      val a = segment.head
+      val b = segment.last
+
+      val direction = (b._1 - a._1, b._2 - a._2)
+      direction match {
+        case (0, -1) => p.setLeft(a._1, a._2 - 1, true)
+        case (1, 0) => p.setTop(a._1, a._2, true)
+        case (0, 1) => p.setLeft(a._1, a._2, true)
+        case (-1, 0) => p.setTop(a._1 - 1, a._2, true)
+        case _ => List()
+      }
+    })
+
+    p
   }
 }
