@@ -1,5 +1,3 @@
-import scala.annotation.tailrec
-
 class Puzzle(val width: Int,
              val height: Int,
              val numbers: List[List[Option[Int]]],
@@ -11,6 +9,7 @@ class Puzzle(val width: Int,
     applyRules()
 
     println(this)
+    //System.exit(1)
 
     val uniqueSegments = getSolvedSegments().distinct
 
@@ -23,71 +22,166 @@ class Puzzle(val width: Int,
 
   // Recursive solver
   private def solveStep(link: List[(Int, Int)], segmentsTail: List[List[(Int, Int)]]): Option[List[(Int, Int)]] = {
-    //if (link.dropRight(1).count(_ == link.last) != 0) return None
-    if (link.head == link.last && segmentsTail.isEmpty) {
-      println(segmentsTail)
-      return Some(link)
-    }
+    //println(this.applyLinkCopy(link))
+    //println(link.dropRight(1).count(_ == link.last))
+    //val appliedBoard = this.applyLinkCopy(link)
+    //println(appliedBoard)
+    //println(segmentsTail)
+    //if (link.count(_ == link.last) > 1 ) return None
 
-    val lastMove = link.takeRight(2)
-    val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
 
     val (cx, cy) = link.last
+    val lastMove = link.takeRight(2)
 
-    val allPossibleMoves = direction match {
-      case (0, -1) => List((cx, cy - 1), (cx + 1, cy), (cx - 1, cy))
-      case (1, 0) => List((cx + 1, cy), (cx, cy + 1), (cx, cy - 1))
-      case (0, 1) => List((cx, cy + 1), (cx + 1, cy), (cx - 1, cy))
-      case (-1, 0) => List((cx - 1, cy), (cx, cy + 1), (cx, cy - 1))
-      case _ => List()
+    val forcedMove = segmentsTail.filter(seg => (seg.head._1 == cx && seg.head._2 == cy) || (seg.last._1 == cx && seg.last._2 == cy))
+    if (forcedMove.nonEmpty) {
+      val move = forcedMove.head
+      val segments = segmentsTail.filter(_ != move)
+      if (link.last == move.head) solveStep(link ++ List(move.last), segments)
+      else solveStep(link ++ List(move.head), segments)
+    } else {
+
+      if (link.head == link.last && segmentsTail.isEmpty) {
+        val appliedBoard = this.applyLinkCopy(link)
+        getNumberCoords().foreach {
+          case (num, x, y) => if (appliedBoard.getSideCount(x, y) != num) {
+            //println(s"Expected $num ($x,$y), got ${appliedBoard.getSideCount(x, y)}")
+            return None
+          }
+        }
+
+        return Some(link)
+      }
+
+
+      //      // Needed?
+      //      val (sx, sy) = (Math.min(lastMove.head._1, lastMove.last._1), Math.min(lastMove.head._2, lastMove.last._2))
+      //      if (sx < width && sy < height) {
+      //        val currNum = getNumber(sx, sy)
+      //        if (currNum.isDefined) {
+      //          val appliedBoard = this.applyLinkCopy(link)
+      //          if (appliedBoard.getSideCount(sx, sy) > currNum.get) {
+      //            //println(s"Expected ${currNum.get} ($sx,$sy), got ${appliedBoard.getSideCount(sx, sy)}")
+      //            return None
+      //          }
+      //        }
+      //      }
+
+
+      val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
+
+      val allPossibleMoves = direction match {
+        case (0, -1) => List((cx, cy - 1), (cx + 1, cy), (cx - 1, cy))
+        case (1, 0) => List((cx + 1, cy), (cx, cy + 1), (cx, cy - 1))
+        case (0, 1) => List((cx, cy + 1), (cx + 1, cy), (cx - 1, cy))
+        case (-1, 0) => List((cx - 1, cy), (cx, cy + 1), (cx, cy - 1))
+        case _ => List()
+      }
+
+      val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 <= width && m._2 <= height)
+
+      val nonExistingMoves = boundedMoves.filter(m => m == link.head || !link.contains(m))
+
+      val possibleMoves = direction match {
+        case (0, -1) => nonExistingMoves.filter(m => {
+          val line = getLeft(m._1, m._2 - 1)
+          line.contains(true) || line.isEmpty
+        })
+        case (1, 0) => nonExistingMoves.filter(m => {
+          val line = getTop(m._1, m._2)
+          line.contains(true) || line.isEmpty
+        })
+        case (0, 1) => nonExistingMoves.filter(m => {
+          val line = getLeft(m._1, m._2)
+          line.contains(true) || line.isEmpty
+        })
+        case (-1, 0) => nonExistingMoves.filter(m => {
+          val line = getTop(m._1 - 1, m._2)
+          line.contains(true) || line.isEmpty
+        })
+      }
+
+      val knownMoves = possibleMoves.filter(move => segmentsTail.exists(s =>
+        (s.head == move && s.last == link.last) || (s.head == link.last && s.last == move)))
+
+      val (moves, tail) = if (knownMoves.nonEmpty) {
+        (knownMoves ++ possibleMoves, segmentsTail.filter(s => !link.contains(s.head) && !link.contains(s.last)))
+      } else {
+        (possibleMoves, segmentsTail)
+      }
+
+      /*println(this.applyLinkCopy(link)) // DEBUG print
+      println("" +
+        s"Link: $link\n" +
+        s"Known moves: $knownMoves\n" +
+        s"Final moves: $moves\n" +
+        s"Tail: $tail\n" +
+        "\n" +
+        "\n")
+  */
+      moves.toStream.map(nextMove => solveStep(link ++ List(nextMove), tail)).collectFirst { case p if p.isDefined => p.get }
     }
-
-    val boundedMoves = allPossibleMoves.filter(m => m._1 >= 0 && m._2 >= 0 && m._1 <= width && m._2 <= height)
-
-    val nonExistingMoves = boundedMoves.filter(m => m == link.head || !link.contains(m))
-
-    val possibleMoves = direction match {
-      case (0, -1) => nonExistingMoves.filter(m => {
-        val line = getLeft(m._1, m._2 - 1)
-        line.contains(true) || line.isEmpty
-      })
-      case (1, 0) => nonExistingMoves.filter(m => {
-        val line = getTop(m._1, m._2)
-        line.contains(true) || line.isEmpty
-      })
-      case (0, 1) => nonExistingMoves.filter(m => {
-        val line = getLeft(m._1, m._2)
-        line.contains(true) || line.isEmpty
-      })
-      case (-1, 0) => nonExistingMoves.filter(m => {
-        val line = getTop(m._1 - 1, m._2)
-        line.contains(true) || line.isEmpty
-      })
-    }
-
-    val knownMoves = possibleMoves.filter(move => segmentsTail.exists(s =>
-      (s.head == move && s.last == link.last) || (s.head == link.last && s.last == move)))
-
-    val (moves, tail) = if (knownMoves.nonEmpty) {
-      (
-        knownMoves,//.sortBy(m => -segmentsTail.flatten.count(s => s == m)), // HMMMMM.....
-        segmentsTail.filter(s => !link.contains(s.head) && !link.contains(s.last)))
-    } else (possibleMoves, segmentsTail)
-
-    /*println(this.applyLinkCopy(link)) // DEBUG print
-    println("" +
-      s"Link: $link\n" +
-      s"Known moves: $knownMoves\n" +
-      s"Final moves: $moves\n" +
-      s"Tail: $tail\n" +
-      "\n" +
-      "\n")
-*/
-    moves.toStream.map(nextMove => solveStep(link ++ List(nextMove), tail)).collectFirst { case p if p.isDefined => p.get }
   }
 
 
   // Rules
+  def ruleOneInCorner() = {
+    getNumberCoords(1).foreach(coord => {
+      val (x, y) = coord
+      if (coord == (0, 0)) {
+        setTop(x, y, false)
+        setLeft(x, y, false)
+      } else if (coord == (width - 1, 0)) {
+        setTop(x, y, false)
+        setRight(x, y, false)
+      } else if (coord == (width - 1, height - 1)) {
+        setBottom(x, y, false)
+        setRight(x, y, false)
+      } else if (coord == (0, height - 1)) {
+        setBottom(x, y, false)
+        setLeft(x, y, false)
+      }
+    })
+  }
+
+  def ruleTwoInCorner() = {
+    getNumberCoords(2).foreach(coord => {
+      val (x, y) = coord
+      if (coord == (0, 0)) {
+        setTop(x + 1, y, true)
+        setLeft(x, y + 1, true)
+      } else if (coord == (width - 1, 0)) {
+        setTop(x - 1, y, true)
+        setRight(x, y + 1, true)
+      } else if (coord == (width - 1, height - 1)) {
+        setBottom(x - 1, y, true)
+        setRight(x, y - 1, true)
+      } else if (coord == (0, height - 1)) {
+        setBottom(x + 1, y, true)
+        setLeft(x, y - 1, true)
+      }
+    })
+  }
+
+  def ruleThreeInCorner() = {
+    getNumberCoords(3).foreach(coord => {
+      val (x, y) = coord
+      if (coord == (0, 0)) {
+        setTop(x, y, true)
+        setLeft(x, y, true)
+      } else if (coord == (width - 1, 0)) {
+        setTop(x, y, true)
+        setRight(x, y, true)
+      } else if (coord == (width - 1, height - 1)) {
+        setBottom(x, y, true)
+        setRight(x, y, true)
+      } else if (coord == (0, height - 1)) {
+        setBottom(x, y, true)
+        setLeft(x, y, true)
+      }
+    })
+  }
+
   def ruleAdjacent3s() = {
     getNumberCoords(3).foreach(coord => {
       // Side by side
@@ -113,68 +207,12 @@ class Puzzle(val width: Int,
     })
   }
 
-  def ruleOneInCorner() = {
-    getNumberCoords(1).foreach(coord => {
-      val (x, y) = coord
-      if (coord == (0, 0)) {
-        setTop(x, y, false)
-        setLeft(x, y, false)
-      } else if (coord == (width - 1, 0)) {
-        setTop(x, y, false)
-        setRight(x, y, false)
-      } else if (coord == (width - 1, height - 1)) {
-        setBottom(x, y, false)
-        setRight(x, y, false)
-      } else if (coord == (0, height - 1)) {
-        setBottom(x, y, false)
-        setLeft(x, y, false)
-      }
-    })
-  }
-
-  def ruleTwoInCorner() = {
-    getNumberCoords(2).foreach(coord => {
-      val (x, y) = coord
-      if (coord == (0, 0)) {
-        setTop(x + 1, y, false)
-        setLeft(x, y + 1, false)
-      } else if (coord == (width - 1, 0)) {
-        setTop(x - 1, y, false)
-        setRight(x, y + 1, false)
-      } else if (coord == (width - 1, height - 1)) {
-        setBottom(x - 1, y, false)
-        setRight(x, y - 1, false)
-      } else if (coord == (0, height - 1)) {
-        setBottom(x + 1, y, false)
-        setLeft(x, y - 1, false)
-      }
-    })
-  }
-
-  def ruleThreeInCorner() = {
-    getNumberCoords(3).foreach(coord => {
-      val (x, y) = coord
-      if (coord == (0, 0)) {
-        setTop(x, y, true)
-        setLeft(x, y, true)
-      } else if (coord == (width - 1, 0)) {
-        setTop(x, y, true)
-        setRight(x, y, true)
-      } else if (coord == (width - 1, height - 1)) {
-        setBottom(x, y, true)
-        setRight(x, y, true)
-      } else if (coord == (0, height - 1)) {
-        setBottom(x, y, true)
-        setLeft(x, y, true)
-      }
-    })
-  }
-
   def applyRules() = {
-    ruleAdjacent3s()
     ruleOneInCorner()
     ruleTwoInCorner()
     ruleThreeInCorner()
+
+    //ruleAdjacent3s()
   }
 
 
@@ -195,6 +233,16 @@ class Puzzle(val width: Int,
 
   def getNumber(x: Int, y: Int) = numbers(y)(x)
 
+  // Get any number cell
+  def getNumberCoords(): List[(Int, Int, Int)] = {
+    numbers.zipWithIndex.flatMap { case (row, y) =>
+      row.zipWithIndex.map { case (num, x) =>
+        if (num.isDefined) Some((num.get, x, y)) else None
+      }
+    }.filter(_.isDefined).map(c => c.get)
+  }
+
+  // Get specific number cell
   def getNumberCoords(n: Int): List[(Int, Int)] = {
     numbers.zipWithIndex.flatMap { case (row, y) =>
       row.zipWithIndex.map { case (num, x) =>
