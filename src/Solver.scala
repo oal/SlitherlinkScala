@@ -5,10 +5,9 @@ object Solver {
       line.split(" ").map(s => Utils.toInt(s)).toList
     })
 
-    val hLine = List.fill(width+1)(None)
-    val vLine = List.fill(height+1)(None)
+    val board = new Board(width, height, numbers)
 
-    new Puzzle(width, height, numbers, List.fill(height+1)(hLine), List.fill(width+1)(vLine))
+    new Puzzle(width, height, board)
   }
 
   def parseBoards(lines: List[String]): List[Puzzle] = {
