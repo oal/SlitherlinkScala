@@ -29,6 +29,10 @@ class Board(val width: Int,
 
   def getNumber(x: Int, y: Int) = numbers(y)(x)
 
+  def isFinishedProcessing(x: Int, y: Int) = {
+    getTop(x, y).isDefined && getRight(x, y).isDefined && getBottom(x, y).isDefined && getLeft(x, y).isDefined
+  }
+
   // Get any number cell
   def getNumberCoords(): List[(Int, Int, Int)] = {
     numbers.zipWithIndex.flatMap { case (row, y) =>

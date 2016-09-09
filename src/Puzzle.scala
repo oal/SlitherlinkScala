@@ -54,6 +54,12 @@ class Puzzle(val width: Int,
     val lastMove = link.takeRight(2)
     val (cx, cy) = lastMove.last
 
+    val (sx, sy) = (cx, cy) //(scala.math.min(link.head._1, link.last._1), scala.math.min(link.head._2, link.last._2))
+    if(board.isFinishedProcessing(sx, sy)) {
+      val num = board.getNumber(sx, sy)
+      if(num.isDefined && board.getSideCount(sx, sy) != num.get) return None
+    }
+
     val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
 
     val allPossibleMoves = direction match {
