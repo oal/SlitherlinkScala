@@ -50,24 +50,66 @@ class Board(width: Int, height: Int, numbers: List[List[Option[Int]]]) {
     if (x > 0) setSquare(x - 1, y, getSquare(x - 1, y).setRight(value))
   }
 
-  def getUp(x: Int, y: Int) = {
+  def getLineUp(x: Int, y: Int) = {
     if (y < 1) None
     else getSquare(x, y - 1).left
   }
 
-  def getRight(x: Int, y: Int) = {
-    if (y < 1) None
-    else getSquare(x, y - 1).top
+  def getLineRight(x: Int, y: Int) = {
+    if (x >= width - 1) None
+    else getSquare(x, y).top
   }
 
-  def getDown(x: Int, y: Int) = {
+  def getLineDown(x: Int, y: Int) = {
     if (y >= height - 1) None
     else getSquare(x, y).left
   }
 
-  def getLeft(x: Int, y: Int) = {
+  def getLineLeft(x: Int, y: Int) = {
     if (x < 1) None
     else getSquare(x - 1, y).top
+  }
+
+  def setLineUp(x: Int, y: Int, value: Boolean): Unit = {
+    if (y < 1) None
+    else setLeft(x, y - 1, value)
+    if (value) {
+      if (getLineLeft(x, y).getOrElse(false)) setLineLeft(x, y, false)
+      if (getLineDown(x, y).getOrElse(false)) setLineDown(x, y, false)
+      if (getLineRight(x, y).getOrElse(false)) setLineRight(x, y, false)
+    }
+  }
+
+  def setLineRight(x: Int, y: Int, value: Boolean): Unit = {
+    if (x < 1) None
+    else setTop(x - 1, y, value)
+    if (value) {
+      if (getLineUp(x, y).getOrElse(false)) setLineUp(x, y, false)
+      if (getLineLeft(x, y).getOrElse(false)) setLineLeft(x, y, false)
+      if (getLineDown(x, y).getOrElse(false)) setLineDown(x, y, false)
+    }
+  }
+
+  def setLineDown(x: Int, y: Int, value: Boolean): Unit = {
+    if (y >= height - 1) None
+    else setLeft(x, y, value)
+    if (value) {
+      if (getLineLeft(x, y).getOrElse(false)) setLineLeft(x, y, false)
+      if (getLineUp(x, y).getOrElse(false)) setLineUp(x, y, false)
+      println("RIGHT", getLineRight(x, y))
+      if (getLineRight(x, y).getOrElse(false)) setLineRight(x, y, false)
+    }
+  }
+
+  def setLineLeft(x: Int, y: Int, value: Boolean): Unit = {
+    if (x < 1) None
+    else setTop(x - 1, y, value)
+
+    if (value) {
+      if (getLineUp(x, y).getOrElse(false)) setLineUp(x, y, false)
+      if (getLineRight(x, y).getOrElse(false)) setLineRight(x, y, false)
+      if (getLineDown(x, y).getOrElse(false)) setLineDown(x, y, false)
+    }
   }
 
   def isValid(): Boolean = {

@@ -5,6 +5,11 @@ class Puzzle(val width: Int,
              val height: Int,
              val board: Board) {
 
+  val TOP = 0
+  val RIGHT = 1
+  val BOTTOM = 2
+  val LEFT = 3
+
   def solve() = {
     applyRules()
 
@@ -20,20 +25,36 @@ class Puzzle(val width: Int,
     println(this.board)
 
     val linkStart = board.getFirstSolved.get.toLine.get
-
-    val b2 = this.board.copy()
-
-    b2.setTop(0, 0, true)
-
-    println( "---")
-    println(b2)
-    println(this.board)
-    println( "---")
-
-    println(b2.getSquare(0, 0).solutions)
+//
+//    val b2 = this.board.copy()
+//
+//    b2.setTop(0, 0, true)
+//
+//    println( "---")
+//    println(b2)
+//    println(this.board)
+//    println( "---")
+//
+//    println(b2.getSquare(0, 0).solutions)
+    bruteforce(this.board.copy(), linkStart)
   }
+    def bruteforce(board: Board, lastSegment: List[(Int, Int)] = List()): Option[Board] = {
+      val (x, y) = lastSegment.last
 
+      val up = board.getLineUp(x, y)
+      val right = board.getLineRight(x, y)
+      val down = board.getLineDown(x, y)
+      val left = board.getLineLeft(x, y)
 
+      val direction = (lastSegment.last._1 - lastSegment.head._1, lastSegment.last._2 - lastSegment.head._2)
+
+      board.setLineDown(x, y, true)
+
+      println(s"Dir: $direction ($lastSegment)")
+      println(board)
+
+      None
+    }
 //  def bruteforce(link: List[(Int, Int)] = List()): Option[List[(Int, Int)]] = {
 //    val (x, y) = link.last
 //
