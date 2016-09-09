@@ -1,46 +1,23 @@
 class Puzzle(val width: Int,
              val height: Int,
              val board: Board
-             ) {
+            ) {
 
 
-  def solve(): Puzzle = {
+  def solve(): Board = {
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
 
-    println("With rules")
-    println(rulesBoard)
-    /*//b2.vertical.foreach(c => c.foreach(println))
-
-    val b3 = b2.copy()
-
-    b2.setLineUp(1, 1, true)
-
-    println("B3")
-    println(b3)
-    println(b2)
-    //b3.vertical.foreach(c => c.foreach(println))*/
-
     val solved = rulesBoard.getSolvedSegments()
-    println(bruteforce(rulesBoard, solved.head, solved.tail).get)
-    this
-
-
-    //System.exit(1)
-
-    //val uniqueSegments = board.getSolvedSegments().distinct
-
-    //val link = uniqueSegments.head
-
-    //println("TAIL: ", uniqueSegments.tail)
-    //val solvedLink = solveStep(link, uniqueSegments.tail).get
-    //this.applyLinkCopy(solvedLink)
+    bruteforce(rulesBoard, solved.head, solved.tail).get
   }
 
   def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]]): Option[Board] = {
+    //println(board)
     if (link.head == link.last && rest.isEmpty) {
+      // TODO: Optimize
       board.getNumberCoords.foreach { case (x, y, num) => {
-        if(board.getSideCount(x, y) != num) {
+        if (board.getSideCount(x, y) != num) {
           //println(s"Expected $num, got ${board.getSideCount(x, y)} at ($x, $y)")
           //println(board)
           return None
@@ -49,15 +26,18 @@ class Puzzle(val width: Int,
       }
       return Some(board)
     }
-    //println(board)
-    //if(link.length > 60) System.exit(0)
+
     val lastMove = link.takeRight(2)
     val (cx, cy) = lastMove.last
 
-    val (sx, sy) = (cx, cy) //(scala.math.min(link.head._1, link.last._1), scala.math.min(link.head._2, link.last._2))
-    if(board.isFinishedProcessing(sx, sy)) {
+    // TODO: Optimize
+    val (sx, sy) = (scala.math.min(link.head._1, link.last._1), scala.math.min(link.head._2, link.last._2))
+    val num = board.getNumber(sx, sy)
+    val numSides = board.getSideCount(sx, sy)
+    if (num.isDefined && numSides > num.get) return None
+    if (board.isFinishedProcessing(sx, sy)) {
       val num = board.getNumber(sx, sy)
-      if(num.isDefined && board.getSideCount(sx, sy) != num.get) return None
+      if (num.isDefined && numSides != num.get) return None
     }
 
     val direction = (lastMove.last._1 - lastMove.head._1, lastMove.last._2 - lastMove.head._2)
@@ -69,9 +49,9 @@ class Puzzle(val width: Int,
       case (-1, 0) => List((0 - 1, 0), (0, 0 + 1), (0, 0 - 1))
       case _ => List()
     }
-    val boundedMoves = allPossibleMoves.filter(m => cx+m._1 >= 0 && cy+m._2 >= 0 && cx+m._1 <= width && cy+m._2 <= height)
 
-    val checkedMoves = boundedMoves.filter(m => (cx+m._1, cy+m._2) == link.head || !link.contains((cx+m._1, cy+m._2)))
+    val boundedMoves = allPossibleMoves.filter(m => cx + m._1 >= 0 && cy + m._2 >= 0 && cx + m._1 <= width && cy + m._2 <= height)
+    val checkedMoves = boundedMoves.filter(m => (cx + m._1, cy + m._2) == link.head || !link.contains((cx + m._1, cy + m._2)))
 
     val allDirections = List((0, -1), (1, 0), (0, 1), (-1, 0))
 
@@ -84,7 +64,7 @@ class Puzzle(val width: Int,
       }
     })
 
-    val moves = if(finalMoves.nonEmpty) finalMoves /*++ checkedMoves.toSet.diff(finalMoves.toSet).toList*/ else checkedMoves
+    val moves = if (finalMoves.nonEmpty) finalMoves /*++ checkedMoves.toSet.diff(finalMoves.toSet).toList*/ else checkedMoves
 
     moves.toStream.map(move => {
       val newBoard = board.copy()
@@ -94,16 +74,19 @@ class Puzzle(val width: Int,
         case (0, 1) => newBoard.setLineDown(cx, cy, true)
         case (-1, 0) => newBoard.setLineLeft(cx, cy, true)
       }
-      val newLast = (cx+move._1, cy+move._2)
+      val newLast = (cx + move._1, cy + move._2)
       val newRest = rest.filter(r => r != List(link.last, newLast) && r != List(newLast, link.last))
 
-      if(link.contains(newLast) && newLast != link.head) return None
+      if (link.contains(newLast) && newLast != link.head) return None
 
       //if (link.head == link.last && rest.isEmpty) return Some(newBoard)
       //println(newBoard)
       bruteforce(newBoard, link ++ List(newLast), newRest)
 
-    }).collectFirst { case p if p.isDefined => { p.get } }
+    }).collectFirst { case p if p.isDefined => {
+      p.get
+    }
+    }
 
     //None
     /*val (mx, my) = boundedMoves.head
@@ -224,8 +207,6 @@ class Puzzle(val width: Int,
 
 
   // Rules
-
-
 
 
   /*def applyLinkCopy(link: List[(Int, Int)]) = {

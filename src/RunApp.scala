@@ -1,4 +1,5 @@
 import java.io.PrintWriter
+import java.time.LocalTime
 
 
 
@@ -16,16 +17,16 @@ object RunApp extends App {
     solveSlitherLinks(f)
   }*/
 
-
-
-
   def solveSlitherLinks(f: File): Unit = {
     println(f.getName)
     val lines = scala.io.Source.fromFile(f).mkString.split("\n").toList
     val numPuzzles = lines.head
 
     val boards = Solver.parseBoards(lines.tail)
-    println(boards(1).solve())
+
+    val now = LocalTime.now()
+    println(boards(0).solve())
+    println((LocalTime.now().toNanoOfDay - now.toNanoOfDay)/1000000000.0)
     //boards.foreach(b => println(b.solve()))
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
