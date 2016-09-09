@@ -4,6 +4,7 @@ class Board(val width: Int,
             var vertical: List[Array[Option[Boolean]]],
             var horizontal: List[Array[Option[Boolean]]]) {
 
+  // Make a full copy of board in its current state
   def copy() = {
     new Board(
       width, height, numbers,
@@ -12,23 +13,7 @@ class Board(val width: Int,
     )
   }
 
-  // Getters and setters
-  def getTop(x: Int, y: Int): Option[Boolean] = {
-    if (x < 0 || y < 0 || x > width || y > width) None
-    else horizontal(y)(x)
-  }
-
-  def getBottom(x: Int, y: Int): Option[Boolean] = getTop(x, y + 1)
-
-  def getLeft(x: Int, y: Int): Option[Boolean] = {
-    if (x < 0 || y < 0 || x > width || y > width) None
-    else vertical(y)(x)
-  }
-
-  def getRight(x: Int, y: Int): Option[Boolean] = getLeft(x + 1, y)
-
-  def getNumber(x: Int, y: Int) = numbers(y)(x)
-
+  // Has all sides of this square either been set to true or false?
   def isFinishedProcessing(x: Int, y: Int) = {
     getTop(x, y).isDefined && getRight(x, y).isDefined && getBottom(x, y).isDefined && getLeft(x, y).isDefined
   }
@@ -42,7 +27,7 @@ class Board(val width: Int,
     }.filter(_.isDefined).map(c => c.get)
   }
 
-  // Get specific number cell
+  // Get specific number cells
   def getNumberCoords(n: Int): List[(Int, Int)] = {
     numbers.zipWithIndex.flatMap { case (row, y) =>
       row.zipWithIndex.map { case (num, x) =>
@@ -51,10 +36,12 @@ class Board(val width: Int,
     }.filter(_.isDefined).map(c => c.get)
   }
 
+  // Count sides set around a square
   def getSideCount(x: Int, y: Int) = {
     List(getTop(x, y), getRight(x, y), getBottom(x, y), getLeft(x, y)).count(_.contains(true))
   }
 
+  // List of all segments solved so far (run after rules are applied)
   def getSolvedSegments(x: Int = 0, y: Int = 0, dir: Int = 0, segments: List[List[(Int, Int)]] = List()): List[List[(Int, Int)]] = {
     if (y >= height) return segments
 
@@ -78,45 +65,60 @@ class Board(val width: Int,
     if (segment.isDefined) segment.get :: getSolvedSegments(nx, ny, ndir) else getSolvedSegments(nx, ny, ndir)
   }
 
-  def setTop(x: Int, y: Int, value: Boolean) = {
-    horizontal(y)(x) = Some(value)
-    //val newRow = horizontal(y).take(x) ++ List(Some(value)) ++ horizontal(y).drop(x + 1)
-    //horizontal = horizontal.take(y) ++ List(newRow) ++ horizontal.drop(y + 1)
+  // Get sides (for square)
+  @inline def getTop(x: Int, y: Int): Option[Boolean] = {
+    if (x < 0 || y < 0 || x > width || y > width) None
+    else horizontal(y)(x)
   }
 
-  def setBottom(x: Int, y: Int, value: Boolean) = {
+  @inline def getBottom(x: Int, y: Int): Option[Boolean] = getTop(x, y + 1)
+
+  @inline def getLeft(x: Int, y: Int): Option[Boolean] = {
+    if (x < 0 || y < 0 || x > width || y > width) None
+    else vertical(y)(x)
+  }
+
+  @inline def getRight(x: Int, y: Int): Option[Boolean] = getLeft(x + 1, y)
+
+  @inline def getNumber(x: Int, y: Int) = numbers(y)(x)
+
+  // Set sides (for squares)
+  @inline def setTop(x: Int, y: Int, value: Boolean) = {
+    horizontal(y)(x) = Some(value)
+  }
+
+  @inline def setBottom(x: Int, y: Int, value: Boolean) = {
     setTop(x, y + 1, value)
   }
 
-  def setLeft(x: Int, y: Int, value: Boolean) = {
+  @inline def setLeft(x: Int, y: Int, value: Boolean) = {
     vertical(y)(x) = Some(value)
-    //val newCol = vertical(y).take(x) ++ List(Some(value)) ++ vertical(y).drop(x + 1)
-    //vertical = vertical.take(y) ++ List(newCol) ++ vertical.drop(y + 1)
   }
 
-  def setRight(x: Int, y: Int, value: Boolean) = {
+  @inline def setRight(x: Int, y: Int, value: Boolean) = {
     setLeft(x + 1, y, value)
   }
 
-  def getLineUp(x: Int, y: Int) = {
+  // Get lines (from dots)
+  @inline def getLineUp(x: Int, y: Int) = {
     if (y > 0) vertical(y - 1)(x)
     else None
   }
 
-  def getLineRight(x: Int, y: Int) = {
+  @inline def getLineRight(x: Int, y: Int) = {
     horizontal(y)(x)
   }
 
-  def getLineDown(x: Int, y: Int) = {
+  @inline def getLineDown(x: Int, y: Int) = {
     vertical(y)(x)
   }
 
-  def getLineLeft(x: Int, y: Int) = {
+  @inline def getLineLeft(x: Int, y: Int) = {
     if (x > 0) horizontal(y)(x - 1)
     else None
   }
 
-
+  // Set lines (from dots)
   def setLineUp(x: Int, y: Int, value: Boolean): Unit = {
     if (y > 0) {
       vertical(y - 1)(x) = Some(value)
@@ -171,7 +173,7 @@ class Board(val width: Int,
         } else {
           "?"
         }
-      }).mkString(" ") // to or until?
+      }).mkString(" ")
 
       s"+$horiz+\n$verti"
     }).mkString("\n")

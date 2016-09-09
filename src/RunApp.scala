@@ -2,8 +2,6 @@ import java.io.PrintWriter
 import java.time.LocalTime
 
 
-
-
 object RunApp extends App {
   val inputdir = "Input"
   // Change to real input dir
@@ -13,9 +11,10 @@ object RunApp extends App {
 
   val dir = new File(inputdir)
   solveSlitherLinks(dir.listFiles().head)
-  /*for (f <- dir.listFiles()) {
+
+  for (f <- dir.listFiles()) {
     solveSlitherLinks(f)
-  }*/
+  }
 
   def solveSlitherLinks(f: File): Unit = {
     println(f.getName)
@@ -24,10 +23,12 @@ object RunApp extends App {
 
     val boards = Solver.parseBoards(lines.tail)
 
-    val now = LocalTime.now()
-    println(boards(0).solve())
-    println((LocalTime.now().toNanoOfDay - now.toNanoOfDay)/1000000000.0)
-    //boards.foreach(b => println(b.solve()))
+    boards.foreach(b => {
+      val now = LocalTime.now()
+      val solution = b.solve()
+      println(s"Solved in ${(LocalTime.now().toNanoOfDay - now.toNanoOfDay) / 1000000000.0} seconds.")
+      println(solution)
+    })
 
     val out = new PrintWriter(new File(outputdir + "/" + f.getName), "UTF-8")
     out.print(numPuzzles + "\n")
