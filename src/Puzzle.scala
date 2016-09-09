@@ -35,8 +35,6 @@ class Puzzle(val width: Int,
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
 
-    println(rulesBoard)
-
     val solved = rulesBoard.getSolvedSegments().distinct
     bruteforce(rulesBoard, solved.head, solved.tail).get
   }

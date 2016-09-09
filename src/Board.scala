@@ -170,7 +170,7 @@ class Board(val width: Int,
         if (top.isDefined) {
           if (top.get) "-" else " "
         } else {
-          "?"
+          " "
         }
       }).mkString("+")
       val verti = (0 to width).map(x => {
@@ -178,7 +178,7 @@ class Board(val width: Int,
         if (left.isDefined) {
           if (left.get) "|" else " "
         } else {
-          "?"
+          " "
         }
       }).mkString(" ")
 
