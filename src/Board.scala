@@ -1,3 +1,6 @@
+// This file is mostly low level setting and getting of lines and sides.
+// A bit terse. Solving logic is in Solver.scala and Puzzle.scala.
+
 class Board(val width: Int,
             val height: Int,
             val numbers: List[List[Option[Int]]],
@@ -84,19 +87,23 @@ class Board(val width: Int,
 
   // Set sides (for squares)
   @inline def setTop(x: Int, y: Int, value: Boolean) = {
-    horizontal(y)(x) = Some(value)
+    if (x < 0 || y < 0 || x > width || y > width) None
+    else horizontal(y)(x) = Some(value)
   }
 
   @inline def setBottom(x: Int, y: Int, value: Boolean) = {
-    setTop(x, y + 1, value)
+    if (x < 0 || y < 0 || x > width || y > height-1) None
+    else horizontal(y+1)(x) = Some(value)
   }
 
   @inline def setLeft(x: Int, y: Int, value: Boolean) = {
-    vertical(y)(x) = Some(value)
+    if (x < 0 || y < 0 || x > width || y > width) None
+    else vertical(y)(x) = Some(value)
   }
 
   @inline def setRight(x: Int, y: Int, value: Boolean) = {
-    setLeft(x + 1, y, value)
+    if (x < 0 || y < 0 || x > width-1 || y > width) None
+    else vertical(y)(x+1) = Some(value)
   }
 
   // Get lines (from dots)
@@ -187,6 +194,6 @@ class Board(val width: Int,
       }
     }).mkString("+")
 
-    s"${width}x$height\n$board\n+$lastHoriz+"
+    s"${width}x$height\n$board\n+$lastHoriz+\n"
   }
 }

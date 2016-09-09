@@ -5,10 +5,15 @@ object Solver {
       line.split(" ").map(s => Utils.toInt(s)).toList
     })
 
+    // Initialize the horizontal and vertical lines the board consists of.
     val hLine: Array[Option[Boolean]] = Array.fill(width+1)(None)
     val vLine: Array[Option[Boolean]] = Array.fill(height+1)(None)
 
-    val board = new Board(width, height, numbers, List.fill(height+1)(hLine), List.fill(width+1)(vLine))
+    val board = new Board(
+      width, height, numbers,
+      List.fill(height+1)(hLine),
+      List.fill(width+1)(vLine)
+    )
 
     new Puzzle(width, height, board)
   }
