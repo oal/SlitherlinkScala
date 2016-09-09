@@ -30,13 +30,13 @@ class Board(val width: Int,
   def getNumber(x: Int, y: Int) = numbers(y)(x)
 
   // Get any number cell
-//  def getNumberCoords(): List[(Int, Int, Int)] = {
-//    numbers.zipWithIndex.flatMap { case (row, y) =>
-//      row.zipWithIndex.map { case (num, x) =>
-//        if (num.isDefined) Some((num.get, x, y)) else None
-//      }
-//    }.filter(_.isDefined).map(c => c.get)
-//  }
+  def getNumberCoords(): List[(Int, Int, Int)] = {
+    numbers.zipWithIndex.flatMap { case (row, y) =>
+      row.zipWithIndex.map { case (num, x) =>
+        if (num.isDefined) Some((x, y, num.get)) else None
+      }
+    }.filter(_.isDefined).map(c => c.get)
+  }
 
   // Get specific number cell
   def getNumberCoords(n: Int): List[(Int, Int)] = {

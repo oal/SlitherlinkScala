@@ -38,7 +38,17 @@ class Puzzle(val width: Int,
   }
 
   def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]]): Option[Board] = {
-    if (link.head == link.last && rest.isEmpty) return Some(board)
+    if (link.head == link.last && rest.isEmpty) {
+      board.getNumberCoords.foreach { case (x, y, num) => {
+        if(board.getSideCount(x, y) != num) {
+          //println(s"Expected $num, got ${board.getSideCount(x, y)} at ($x, $y)")
+          //println(board)
+          return None
+        }
+      }
+      }
+      return Some(board)
+    }
     //println(board)
     //if(link.length > 60) System.exit(0)
     val lastMove = link.takeRight(2)
