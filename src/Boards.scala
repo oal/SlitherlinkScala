@@ -39,14 +39,13 @@ class Boards(path:String) {
       ("Right", new Connector(false))
     )
 
-    def isFull():Boolean = {
+    def isFull:Boolean = {
       if(value != -1){
-        val c = for(i <- connector if i._2.set) yield i
-
-        if(c.size == value) true else false
+        val c = for(i <- connector if i._2.set) yield 1
+        c.size == value
       }
       else
-        true
+        false
     }
 
   }
