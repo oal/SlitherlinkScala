@@ -1,3 +1,7 @@
+//import scala.concurrent.duration._
+//import scala.concurrent.ExecutionContext.Implicits.global
+//import scala.concurrent.{Await, Future}
+
 class Puzzle(val width: Int,
              val height: Int,
              val board: Board
@@ -32,11 +36,28 @@ class Puzzle(val width: Int,
   }
 
   def solve(): Board = {
+    // Special handling for 1x1
+    if(width == 1 && height == 1) {
+      this.board.setTop(0, 0, true)
+      this.board.setRight(0, 0, true)
+      this.board.setBottom(0, 0, true)
+      this.board.setLeft(0, 0, true)
+      return this.board
+    }
+
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
-
     val solved = rulesBoard.getSolvedSegments().distinct
     bruteforce(rulesBoard, solved.head, solved.tail).get
+
+    /*val tasks: Seq[Future[Board]] = for (i <- solved.indices) yield Future {
+      val start = solved(i)
+      println(s"Starting $i at $start")
+      val board = bruteforce(rulesBoard, start, solved.filter(_!=start)).get
+      println(s"Finished $i at $start")
+      board
+    }
+    Await.result(Future.firstCompletedOf(tasks), 120.seconds)*/
   }
 
   private def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]]): Option[Board] = {

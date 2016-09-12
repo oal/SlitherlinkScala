@@ -10,9 +10,10 @@ object RunApp extends App {
   import java.io.File
 
   val dir = new File(inputdir)
-  for (f <- dir.listFiles()) {
+  solveSlitherLinks(dir.listFiles().head)
+  /*for (f <- dir.listFiles()) {
     solveSlitherLinks(f)
-  }
+  }*/
 
   def solveSlitherLinks(f: File): Unit = {
     println(f.getName)
