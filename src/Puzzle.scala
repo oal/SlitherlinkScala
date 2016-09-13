@@ -1,6 +1,8 @@
-//import scala.concurrent.duration._
-//import scala.concurrent.ExecutionContext.Implicits.global
-//import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, Future}
+
+class BoolRef(var set: Boolean)
 
 class Puzzle(val width: Int,
              val height: Int,
@@ -48,19 +50,22 @@ class Puzzle(val width: Int,
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
     val solved = rulesBoard.getSolvedSegments().distinct
-    bruteforce(rulesBoard, solved.head, solved.tail).get
 
-    /*val tasks: Seq[Future[Board]] = for (i <- solved.indices) yield Future {
+    val done = new BoolRef(false)
+    val tasks: Seq[Future[Option[Board]]] = for (i <- solved.indices.slice(0, 3)) yield Future {
       val start = solved(i)
-      println(s"Starting $i at $start")
-      val board = bruteforce(rulesBoard, start, solved.filter(_!=start)).get
-      println(s"Finished $i at $start")
+      val board = bruteforce(rulesBoard, start, solved.filter(_!=start), done)
+      if(board.isDefined) synchronized { done.set = true }
       board
     }
-    Await.result(Future.firstCompletedOf(tasks), 120.seconds)*/
+
+    val aggregated: Future[Seq[Option[Board]]] = Future.sequence(tasks)
+    Await.result(aggregated, Duration.Inf).filter(_.isDefined).head.get
   }
 
-  private def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]]): Option[Board] = {
+  private def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]], done: BoolRef): Option[Board] = {
+    if(done.set) return None
+
     // Last move is the segment consisting of the two last elements of the link
     val lastMove = link.takeRight(2)
     val (cx, cy) = lastMove.last // Current x and current y positions.
@@ -104,6 +109,7 @@ class Puzzle(val width: Int,
     // Limit options:
     val boundedMoves = allPossibleMoves.filter(m => cx + m._1 >= 0 && cy + m._2 >= 0 && cx + m._1 <= width && cy + m._2 <= height)
     val checkedMoves = boundedMoves.filter(m => (cx + m._1, cy + m._2) == link.head || !link.contains((cx + m._1, cy + m._2)))
+    //val randomMoves = checkedMoves.sortBy(move => (link.head._1 * 23480123.2 % 3923.1) + (link.head._2 * 45641.7 % 1235.9))
 
     // If any of the possible moves are definitely set, then go there:
     val finalMoves = checkedMoves.filter(m => {
@@ -136,7 +142,7 @@ class Puzzle(val width: Int,
       val newRest = rest.filter(r => r != List(link.last, newLast) && r != List(newLast, link.last))
 
       // Next iteration of our brute force attack.
-      bruteforce(newBoard, link ++ List(newLast), newRest)
+      bruteforce(newBoard, link ++ List(newLast), newRest, done)
     }).collectFirst { case p if p.isDefined => p.get } // Get the first valid board.
   }
 }
