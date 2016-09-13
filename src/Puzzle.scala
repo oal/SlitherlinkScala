@@ -49,9 +49,14 @@ class Puzzle(val width: Int,
 
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
-    val solved = rulesBoard.getSolvedSegments().distinct
-
+    val solved = rulesBoard.getSolvedSegments().distinct.sortBy(segment => {
+      val p = segment.head
+      val x = p._1-board.width/2
+      val y = p._2-board.height/2
+      math.sqrt(x*x+y*y)
+    })
     val done = new BoolRef(false)
+
     val tasks: Seq[Future[Option[Board]]] = for (i <- solved.indices.slice(0, 3)) yield Future {
       val start = solved(i)
       val board = bruteforce(rulesBoard, start, solved.filter(_!=start), done)
@@ -99,9 +104,9 @@ class Puzzle(val width: Int,
 
     val allPossibleMoves = direction match {
       case UP => List(UP, RIGHT, LEFT)
-      case RIGHT => List(UP, RIGHT, DOWN)
-      case DOWN => List(RIGHT, LEFT, DOWN)
-      case LEFT => List(UP, LEFT, DOWN)
+      case RIGHT => List(RIGHT, UP, DOWN)
+      case DOWN => List(DOWN, RIGHT, LEFT)
+      case LEFT => List(LEFT, UP, DOWN)
       case _ => List()
     }
 
@@ -109,10 +114,22 @@ class Puzzle(val width: Int,
     // Limit options:
     val boundedMoves = allPossibleMoves.filter(m => cx + m._1 >= 0 && cy + m._2 >= 0 && cx + m._1 <= width && cy + m._2 <= height)
     val checkedMoves = boundedMoves.filter(m => (cx + m._1, cy + m._2) == link.head || !link.contains((cx + m._1, cy + m._2)))
-    //val randomMoves = checkedMoves.sortBy(move => (link.head._1 * 23480123.2 % 3923.1) + (link.head._2 * 45641.7 % 1235.9))
+    val exDeniedMoves = checkedMoves.filter(m => {
+      m match {
+        case UP => if(board.getLineUp(cx, cy).contains(false)) false else true
+        case RIGHT => if(board.getLineRight(cx, cy).contains(false)) false else true
+        case DOWN => if(board.getLineDown(cx, cy).contains(false)) false else true
+        case LEFT => if(board.getLineLeft(cx, cy).contains(false)) false else true
+      }
+    }).sortBy(m => {
+      val heads = rest.map(s => s.head)
+      val tails = rest.map(s => s.last)
+      val to = (cx+m._1, cy+m._2)
+      if(heads.contains(to) || tails.contains(to)) -1 else 1
+    })
 
     // If any of the possible moves are definitely set, then go there:
-    val finalMoves = checkedMoves.filter(m => {
+    val finalMoves = exDeniedMoves.filter(m => {
       m match {
         case UP => board.getLineUp(cx, cy).contains(true)
         case RIGHT => board.getLineRight(cx, cy).contains(true)
@@ -122,7 +139,7 @@ class Puzzle(val width: Int,
     })
 
     // If above list is empty, fall back to the other moves:
-    val moves = if (finalMoves.nonEmpty) finalMoves else checkedMoves
+    val moves = if (finalMoves.nonEmpty) finalMoves else exDeniedMoves
 
     // Turn moves into a stream so it can be lazily evaluated, and we can collect the first valid board off of it.
     moves.toStream.map(move => {

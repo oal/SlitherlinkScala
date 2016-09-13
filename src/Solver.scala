@@ -2,7 +2,7 @@ object Solver {
   def parseBoard(width: Int, height: Int, lines: List[String]): Puzzle = {
     // Parse numbers to ints, or use None. Add one cell to the right (see above).
     val numbers = lines.map(line => {
-      line.split(" ").map(s => Utils.toInt(s)).toList
+      line.split(" ").map(s => new Square(Utils.toInt(s), None)).toList
     })
 
     // Initialize the horizontal and vertical lines the board consists of.

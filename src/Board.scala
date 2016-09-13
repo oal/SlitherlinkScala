@@ -3,7 +3,7 @@
 
 class Board(val width: Int,
             val height: Int,
-            val numbers: List[List[Option[Int]]],
+            val numbers: List[List[Square]],
             var vertical: List[Array[Option[Boolean]]],
             var horizontal: List[Array[Option[Boolean]]]) {
 
@@ -25,7 +25,7 @@ class Board(val width: Int,
   def getNumberCoords(): List[(Int, Int, Int)] = {
     numbers.zipWithIndex.flatMap { case (row, y) =>
       row.zipWithIndex.map { case (num, x) =>
-        if (num.isDefined) Some((x, y, num.get)) else None
+        if (num.number.isDefined) Some((x, y, num.number.get)) else None
       }
     }.filter(_.isDefined).map(c => c.get)
   }
@@ -34,7 +34,7 @@ class Board(val width: Int,
   def getNumberCoords(n: Int): List[(Int, Int)] = {
     numbers.zipWithIndex.flatMap { case (row, y) =>
       row.zipWithIndex.map { case (num, x) =>
-        if (num.isDefined && num.get == n) Some((x, y)) else None
+        if (num.number.isDefined && num.number.get == n) Some((x, y)) else None
       }
     }.filter(_.isDefined).map(c => c.get)
   }
@@ -83,7 +83,7 @@ class Board(val width: Int,
 
   @inline def getRight(x: Int, y: Int): Option[Boolean] = getLeft(x + 1, y)
 
-  @inline def getNumber(x: Int, y: Int) = numbers(y)(x)
+  @inline def getNumber(x: Int, y: Int) = numbers(y)(x).number
 
   // Set sides (for squares)
   @inline def setTop(x: Int, y: Int, value: Boolean) = {
@@ -170,7 +170,7 @@ class Board(val width: Int,
         if (top.isDefined) {
           if (top.get) "-" else " "
         } else {
-          " "
+          "?"
         }
       }).mkString("+")
       val verti = (0 to width).map(x => {
@@ -178,7 +178,7 @@ class Board(val width: Int,
         if (left.isDefined) {
           if (left.get) "|" else " "
         } else {
-          " "
+          "?"
         }
       }).mkString(" ")
 
