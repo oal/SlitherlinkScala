@@ -115,6 +115,30 @@ object Rules {
     })
   }
 
+  private def diagonal3s(board: Board) = {
+    board.getNumberCoords(3).foreach(coord => {
+      val (x, y) = coord
+
+      // Down to the right
+      if (x < board.width - 1 && y < board.height - 1 && board.getNumber(x + 1, y + 1).contains(3)) {
+        board.setTop(x, y, true)
+        board.setLeft(x, y, true)
+
+        board.setRight(x + 1, y + 1, true)
+        board.setBottom(x + 1, y + 1, true)
+      }
+
+      // Down to the left
+      if (x > 0 && y < board.height - 1 && board.getNumber(x - 1, y + 1).contains(3)) {
+        board.setTop(x, y, true)
+        board.setRight(x, y, true)
+
+        board.setLeft(x - 1, y + 1, true)
+        board.setBottom(x - 1, y + 1, true)
+      }
+    })
+  }
+
   private def threeNextToZero(board: Board) = {
     board.getNumberCoords(3).foreach(coord => {
       val (x, y) = coord
@@ -195,6 +219,7 @@ object Rules {
     threeInCorner(board)
 
     adjacent3s(board)
+    diagonal3s(board)
     threeNextToZero(board)
 
     // Last

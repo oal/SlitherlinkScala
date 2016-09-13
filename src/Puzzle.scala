@@ -47,17 +47,29 @@ class Puzzle(val width: Int,
       return this.board
     }
 
+    // Apply rules
     val rulesBoard = this.board.copy()
     Rules.applyRules(rulesBoard)
+
+    // Sort solved segments so that the ones close to the center are where we start.
+    // Benchmarks show that this is a good idea as we can't easily get stuck in a corner.
     val solved = rulesBoard.getSolvedSegments().distinct.sortBy(segment => {
       val p = segment.head
       val x = p._1-board.width/2
       val y = p._2-board.height/2
       math.sqrt(x*x+y*y)
     })
-    val done = new BoolRef(false)
 
-    val tasks: Seq[Future[Option[Board]]] = for (i <- solved.indices.slice(0, 3)) yield Future {
+    // Find start positions. Take every second solved segment, otherwise we'll often end up with
+    // several very similar starting positions. Only grab the first four, as that will most likely
+    // schedule all to run at the same time.
+    val startPositions = if(solved.size < 8) solved.indices
+    else solved.indices.grouped(2).map(_.head).toList.slice(0, 4)
+
+    // Create tasks to be run concurrently. Use the BoolRef as a pass-by-reference boolean that
+    // is set to true once one valid board is found, effectively terminating the rest of the tasks.
+    val done = new BoolRef(false)
+    val tasks: Seq[Future[Option[Board]]] = for (i <- startPositions) yield Future {
       val start = solved(i)
       val board = bruteforce(rulesBoard, start, solved.filter(_!=start), done)
       if(board.isDefined) synchronized { done.set = true }
