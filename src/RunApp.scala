@@ -10,10 +10,9 @@ object RunApp extends App {
   import java.io.File
 
   val dir = new File(inputdir)
-  solveSlitherLinks(dir.listFiles().head)
-  /*for (f <- dir.listFiles()) {
+  for (f <- dir.listFiles()) {
     solveSlitherLinks(f)
-  }*/
+  }
 
   def solveSlitherLinks(f: File): Unit = {
     println(f.getName)
@@ -28,7 +27,7 @@ object RunApp extends App {
     boards.foreach(b => {
       val now = LocalTime.now()
       val solution = b.solve()
-      println(s"Solved in ${(LocalTime.now().toNanoOfDay - now.toNanoOfDay) / 1000000000.0} seconds.")
+      println(s"Solved ${b.width}x${b.height} in ${(LocalTime.now().toNanoOfDay - now.toNanoOfDay) / 1000000000.0} seconds.")
       out.print(solution)
     })
 
