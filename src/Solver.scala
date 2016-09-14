@@ -74,7 +74,7 @@ class Solver(boards:BoardParser, i:Int) {
 
   /**
     * @version 1.1 Sep 14, 2016.
-    * From the given parameter dot, check if a move in the directions "Up", "Right", "Down" & "Left" respectively
+    * From the given parameter dot, check if a move in the directions 'Up, 'Right, 'Down & 'Left respectively
     * are valid moves, if so calls itself recursively. If no valid moves can be made, check to see if the board is solved.
     * If the board is solved no other moves are valid and backtracks without making any further calls to itself. If however
     * the board is not solved and none of the moves are valid, removes the connection between the dot and the previous dot
@@ -84,19 +84,19 @@ class Solver(boards:BoardParser, i:Int) {
     * @param previousDot
     */
   def move(dot:Dot, previousDot:Dot):Unit = {
-    if(validMove(dot, "Up")){                                                     //checks if up is a valid move
+    if(validMove(dot, 'Up)){                                                     //checks if up is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y-1))                               //makes the connections between the dot and the dot above
       move(dots.x(dot.x).y(dot.y-1), dot)                                         //calls move with the above dot
     }
-    if(validMove(dot, "Right")){                                                  //checks if right is a valid move
+    if(validMove(dot, 'Right)){                                                  //checks if right is a valid move
       makeConnection(dot, dots.x(dot.x+1).y(dot.y))                               //makes the connections between the dot and the right dot
       move(dots.x(dot.x+1).y(dot.y), dot)                                         //calls move with the right dot
     }
-    if(validMove(dot, "Down")){                                                   //checks if down is a valid move
+    if(validMove(dot, 'Down)){                                                   //checks if down is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y+1))                               //makes the connections between the dot and the dot below
       move(dots.x(dot.x).y(dot.y+1), dot)                                         //calls move with the dot below
     }
-    if(validMove(dot, "Left")){                                                   //checks if left is a valid move
+    if(validMove(dot, 'Left)){                                                   //checks if left is a valid move
       makeConnection(dot, dots.x(dot.x-1).y(dot.y))                               //makes the connection between the dot and the left dot
       move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
     }
@@ -132,10 +132,10 @@ class Solver(boards:BoardParser, i:Int) {
     * @param s:String (Direction)
     * @return Boolean
     */
-  def validMove(d:Dot, s:String):Boolean = {
+  def validMove(d:Dot, s:Symbol):Boolean = {
     if(d.links.full)                                                              //If all links are saturated no moves are valid
       false
-    else if(s == "Up"){
+    else if(s == 'Up){
       if(d.y > 0                                                                  //If the dot's y is 0 or the dot above is full or contains this dot
         && !dots.x(d.x).y(d.y-1).links.full                                       //no moves in the upward direction is allowed
         && !dots.x(d.x).y(d.y-1).links.contains(d))
@@ -157,7 +157,7 @@ class Solver(boards:BoardParser, i:Int) {
       else
         false
     }
-    else if(s == "Right"){
+    else if(s == 'Right){
       if(d.x < dots.x.size-1                                                      //If the dot's x is at the bottom edge or the dot below is full or contains this dot
         && !dots.x(d.x+1).y(d.y).links.full                                       //no moves in the downward direction is allowed
         && !dots.x(d.x+1).y(d.y).links.contains(d))
@@ -179,7 +179,7 @@ class Solver(boards:BoardParser, i:Int) {
       else
         false
     }
-    else if(s == "Down"){
+    else if(s == 'Down){
       if(d.y < dots.x(d.x).y.size-1                                               //If the dot's y is at the bottom edge or the dot above is full or contains this dot
         && !dots.x(d.x).y(d.y+1).links.full                                       //no moves in the upward direction is allowed
         && !dots.x(d.x).y(d.y+1).links.contains(d))
@@ -201,7 +201,7 @@ class Solver(boards:BoardParser, i:Int) {
       else
         false
     }
-    else if(s == "Left"){
+    else if(s == 'Left){
       if(d.x > 0                                                                  //If the dot's x is 0 or the dot below is full or contains this dot
         && !dots.x(d.x-1).y(d.y).links.full                                       //no moves in the downward direction is allowed
         && !dots.x(d.x-1).y(d.y).links.contains(d))
@@ -244,93 +244,93 @@ class Solver(boards:BoardParser, i:Int) {
     toDot.links.add(dot)
     if(toDot.y - dot.y < 0){
       if(dot.x > b.row(0).square.size-1)
-        boards.setConnector(i, toDot.y, toDot.x-1, "Right", s = true, l)
+        boards.setConnector(i, toDot.y, toDot.x-1, 'Right, s = true, l)
       else
-        boards.setConnector(i, toDot.y, toDot.x, "Left", s = true, l)
+        boards.setConnector(i, toDot.y, toDot.x, 'Left, s = true, l)
     }
     else if(toDot.x - dot.x > 0){
       if(dot.y > b.row.size-1)
-        boards.setConnector(i, dot.y-1, dot.x, "Down", s = true, l)
+        boards.setConnector(i, dot.y-1, dot.x, 'Down, s = true, l)
       else
-        boards.setConnector(i, dot.y, dot.x, "Up", s = true, l)
+        boards.setConnector(i, dot.y, dot.x, 'Up, s = true, l)
     }
     else if(toDot.y - dot.y > 0){
       if(dot.x > b.row(dot.y).square.size-1)
-        boards.setConnector(i, dot.y, dot.x-1, "Right", s = true, l)
+        boards.setConnector(i, dot.y, dot.x-1, 'Right, s = true, l)
       else
-        boards.setConnector(i, dot.y, dot.x, "Left", s = true, l)
+        boards.setConnector(i, dot.y, dot.x, 'Left, s = true, l)
     }
     else{
       if (dot.y > b.row.size-1)
-        boards.setConnector(i, toDot.y-1, toDot.x, "Down", s = true, l)
+        boards.setConnector(i, toDot.y-1, toDot.x, 'Down, s = true, l)
       else
-        boards.setConnector(i, toDot.y, toDot.x, "Up", s = true, l)
+        boards.setConnector(i, toDot.y, toDot.x, 'Up, s = true, l)
     }
   }
 
   def removeConnection(dot:Dot, prevDot:Dot) = {
     if(prevDot.y - dot.y > 0){
       if(dot.x > b.row(dot.y).square.size-1
-        && !b.row(dot.y).square(dot.x-1).connector("Right").locked)
+        && !b.row(dot.y).square(dot.x-1).connector('Right).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x-1, "Right", s = false, l = false)
+        boards.setConnector(i, dot.y, dot.x-1, 'Right, s = false, l = false)
       }
       else if(dot.x <= b.row(dot.y).square.size-1
-        && !b.row(dot.y).square(dot.x).connector("Left").locked)
+        && !b.row(dot.y).square(dot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x, "Left", s = false, l = false)
+        boards.setConnector(i, dot.y, dot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x < 0){
       if(prevDot.y > b.row.size-1
-        && !b.row(prevDot.y-1).square(prevDot.x).connector("Down").locked)
+        && !b.row(prevDot.y-1).square(prevDot.x).connector('Down).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y-1, prevDot.x, "Down", s = false, l = false)
+        boards.setConnector(i, prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
       }
       else if(prevDot.y <= b.row.size-1
-        && !b.row(prevDot.y).square(prevDot.x).connector("Up").locked)
+        && !b.row(prevDot.y).square(prevDot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x, "Up", s = false, l = false)
+        boards.setConnector(i, prevDot.y, prevDot.x, 'Up, s = false, l = false)
       }
     }
     else if(prevDot.y - dot.y < 0){
       if(prevDot.x > b.row(prevDot.y).square.size-1
-        && !b.row(prevDot.y).square(prevDot.x-1).connector("Right").locked)
+        && !b.row(prevDot.y).square(prevDot.x-1).connector('Right).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x-1, "Right", s = false, l = false)
+        boards.setConnector(i, prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
       }
       else if(prevDot.x <= b.row(prevDot.y).square.size-1
-        && !b.row(prevDot.y).square(prevDot.x).connector("Left").locked)
+        && !b.row(prevDot.y).square(prevDot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x, "Left", s = false, l = false)
+        boards.setConnector(i, prevDot.y, prevDot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x > 0){
       if(dot.y > b.row.size-1
-        && !b.row(dot.y-1).square(dot.x).connector("Down").locked)
+        && !b.row(dot.y-1).square(dot.x).connector('Down).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y-1, dot.x, "Down", s = false, l = false)
+        boards.setConnector(i, dot.y-1, dot.x, 'Down, s = false, l = false)
       }
       else if(dot.y <= b.row.size-1
-        && !b.row(dot.y).square(dot.x).connector("Up").locked)
+        && !b.row(dot.y).square(dot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x, "Up", s = false, l = false)
+        boards.setConnector(i, dot.y, dot.x, 'Up, s = false, l = false)
       }
     }
   }
@@ -356,13 +356,13 @@ class Solver(boards:BoardParser, i:Int) {
       x <- y.square;
       c <- x.connector)
       if(c._2.set){
-        if(c._1 == "Up")
+        if(c._1 == 'Up)
           makeConnection(dots.x(x.x).y(x.y), dots.x(x.x+1).y(x.y), c._2.locked)
-        else if(c._1 == "Right")
+        else if(c._1 == 'Right)
           makeConnection(dots.x(x.x+1).y(x.y), dots.x(x.x+1).y(x.y+1), c._2.locked)
-        else if(c._1 == "Down")
+        else if(c._1 == 'Down)
           makeConnection(dots.x(x.x).y(x.y+1), dots.x(x.x+1).y(x.y+1), c._2.locked)
-        else if(c._1 == "Left")
+        else if(c._1 == 'Left)
           makeConnection(dots.x(x.x).y(x.y), dots.x(x.x).y(x.y+1), c._2.locked)
       }
   }
