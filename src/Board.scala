@@ -87,39 +87,33 @@ class Board(val width: Int,
 
   // Set sides (for squares)
   @inline def setTop(x: Int, y: Int, value: Boolean) = {
-    if (x < 0 || y < 0 || x > width || y > width) None
-    else horizontal = setHorizontal(x, y, value)
-    //else horizontal(y)(x) = Some(value)
+    if (x < 0 || y < 0 || x > width || y > width) this
+    else setHorizontal(x, y, value)
   }
 
   @inline def setBottom(x: Int, y: Int, value: Boolean) = {
-    if (x < 0 || y < 0 || x > width || y > height-1) None
-    else horizontal = setHorizontal(x, y+1, value)
-    //else horizontal(y+1)(x) = Some(value)
+    if (x < 0 || y < 0 || x > width || y > height-1) this
+    else setHorizontal(x, y+1, value)
   }
 
   @inline def setLeft(x: Int, y: Int, value: Boolean) = {
-    if (x < 0 || y < 0 || x > width || y > width) None
-    else vertical = setVertical(x, y, value)
-    //else vertical(y)(x) = Some(value)
+    if (x < 0 || y < 0 || x > width || y > width) this
+    else setVertical(x, y, value)
   }
 
   @inline def setRight(x: Int, y: Int, value: Boolean) = {
-    if (x < 0 || y < 0 || x > width-1 || y > width) None
-    else vertical = setVertical(x+1, y, value)
-    //else vertical(y)(x+1) = Some(value)
+    if (x < 0 || y < 0 || x > width-1 || y > width) this
+    else setVertical(x+1, y, value)
   }
 
   def setVertical(x: Int, y: Int, value: Boolean) = {
     val newCol = vertical(y).take(x) ++ List(Some(value)) ++ vertical(y).drop(x + 1)
-    vertical = vertical.take(y) ++ List(newCol) ++ vertical.drop(y + 1)
-    vertical
+    new Board(width, height, numbers, vertical.take(y) ++ List(newCol) ++ vertical.drop(y + 1), horizontal)
   }
 
   def setHorizontal(x: Int, y: Int, value: Boolean) = {
     val newRow = horizontal(y).take(x) ++ List(Some(value)) ++ horizontal(y).drop(x + 1)
-    horizontal = horizontal.take(y) ++ List(newRow) ++ horizontal.drop(y + 1)
-    horizontal
+    new Board(width, height, numbers, vertical, horizontal.take(y) ++ List(newRow) ++ horizontal.drop(y + 1))
   }
 
   // Get lines (from dots)
@@ -142,44 +136,50 @@ class Board(val width: Int,
   }
 
   // Set lines (from dots)
-  def setLineUp(x: Int, y: Int, value: Boolean): Unit = {
+  def setLineUp(x: Int, y: Int, value: Boolean): Board = {
     if (y > 0) {
       //vertical(y - 1)(x) = Some(value)
-      vertical = setVertical(x, y-1, value)
+      val newBoard = setVertical(x, y-1, value)
 
-      if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
-      if (getLineDown(x, y).isEmpty) setLineDown(x, y, false)
-      if (getLineRight(x, y).isEmpty) setLineRight(x, y, false)
+      val newBoard2 = if (newBoard.getLineLeft(x, y).isEmpty) newBoard.setLineLeft(x, y, false) else newBoard
+      val newBoard3 = if (newBoard2.getLineDown(x, y).isEmpty) newBoard2.setLineDown(x, y, false) else newBoard2
+      val newBoard4 = if (newBoard3.getLineRight(x, y).isEmpty) newBoard3.setLineRight(x, y, false) else newBoard3
+      newBoard4
     }
+    else this
   }
 
-  def setLineRight(x: Int, y: Int, value: Boolean): Unit = {
+  def setLineRight(x: Int, y: Int, value: Boolean): Board = {
     //horizontal(y)(x) = Some(value)
-    horizontal = setHorizontal(x, y, value)
+    val newBoard = setHorizontal(x, y, value)
 
-    if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
-    if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
-    if (getLineDown(x, y).isEmpty) setLineDown(x, y, false)
+    val newBoard2 = if (newBoard.getLineUp(x, y).isEmpty) newBoard.setLineUp(x, y, false) else newBoard
+    val newBoard3 = if (newBoard2.getLineLeft(x, y).isEmpty) newBoard2.setLineLeft(x, y, false) else newBoard2
+    val newBoard4 = if (newBoard3.getLineDown(x, y).isEmpty) newBoard3.setLineDown(x, y, false) else newBoard3
+    newBoard4
   }
 
-  def setLineDown(x: Int, y: Int, value: Boolean): Unit = {
+  def setLineDown(x: Int, y: Int, value: Boolean): Board = {
     //vertical(y)(x) = Some(value)
-    vertical = setVertical(x, y, value)
+    val newBoard = setVertical(x, y, value)
 
-    if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
-    if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
-    if (getLineRight(x, y).isEmpty) setLineRight(x, y, false)
+    val newBoard2 = if (newBoard.getLineLeft(x, y).isEmpty) newBoard.setLineLeft(x, y, false) else newBoard
+    val newBoard3 = if (newBoard2.getLineUp(x, y).isEmpty) newBoard2.setLineUp(x, y, false) else newBoard2
+    val newBoard4 = if (newBoard3.getLineRight(x, y).isEmpty) newBoard3.setLineRight(x, y, false) else newBoard3
+    newBoard4
   }
 
-  def setLineLeft(x: Int, y: Int, value: Boolean): Unit = {
+  def setLineLeft(x: Int, y: Int, value: Boolean): Board = {
     if (x > 0) {
       //horizontal(y)(x - 1) = Some(value)
-      horizontal = setHorizontal(x-1, y, value)
+      val newBoard = setHorizontal(x-1, y, value)
 
-      if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
-      if (getLineRight(x, y).isEmpty) setLineRight(x, y, false)
-      if (getLineDown(x, y).isEmpty) setLineDown(x, y, false)
+      val newBoard2 = if (newBoard.getLineUp(x, y).isEmpty) newBoard.setLineUp(x, y, false) else newBoard
+      val newBoard3 = if (newBoard2.getLineRight(x, y).isEmpty) newBoard2.setLineRight(x, y, false) else newBoard2
+      val newBoard4 = if (newBoard3.getLineDown(x, y).isEmpty) newBoard3.setLineDown(x, y, false) else newBoard3
+      newBoard4
     }
+    else this
   }
 
   // Stringify

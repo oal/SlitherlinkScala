@@ -48,8 +48,9 @@ class Puzzle(val width: Int,
     }
 
     // Apply rules
-    val rulesBoard = this.board.copy()
-    Rules.applyRules(rulesBoard)
+    //val rulesBoard = this.board.copy()
+    val rulesBoard = Rules.applyRules(this.board)
+    //println(rulesBoard)
 
     // Sort solved segments so that the ones close to the center are where we start.
     // Benchmarks show that this is a good idea as we can't easily get stuck in a corner.
@@ -59,6 +60,8 @@ class Puzzle(val width: Int,
       val y = p._2-board.height/2
       math.sqrt(x*x+y*y)
     })
+
+    //return bruteforce(rulesBoard, solved.head, solved.tail, new BoolRef(false)).get
 
     // Find start positions. Take every second solved segment, otherwise we'll often end up with
     // several very similar starting positions. Only grab the first four, as that will most likely
@@ -82,6 +85,7 @@ class Puzzle(val width: Int,
 
   private def bruteforce(board: Board, link: List[(Int, Int)], rest: List[List[(Int, Int)]], done: BoolRef): Option[Board] = {
     if(done.set) return None
+    //println(board, link, rest)
 
     // Last move is the segment consisting of the two last elements of the link
     val lastMove = link.takeRight(2)
@@ -156,12 +160,12 @@ class Puzzle(val width: Int,
     // Turn moves into a stream so it can be lazily evaluated, and we can collect the first valid board off of it.
     moves.toStream.map(move => {
       // Create copy of board, and update it with the line to the next position of our slitherlink
-      val newBoard = board.copy()
-      move match {
-        case UP => newBoard.setLineUp(cx, cy, true)
-        case RIGHT => newBoard.setLineRight(cx, cy, true)
-        case DOWN => newBoard.setLineDown(cx, cy, true)
-        case LEFT => newBoard.setLineLeft(cx, cy, true)
+      //val newBoard = board.copy()
+      val newBoard = move match {
+        case UP => board.setLineUp(cx, cy, true)
+        case RIGHT => board.setLineRight(cx, cy, true)
+        case DOWN => board.setLineDown(cx, cy, true)
+        case LEFT => board.setLineLeft(cx, cy, true)
       }
 
       // Find what the new last element of the link is (cx and cy for the next iteration)
