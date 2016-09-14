@@ -95,7 +95,7 @@ class Solver(val board: Board) {
     if(dot.links.full && !loop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
       solve()
     }
-    if(!solved){                                                                  //checks if the board is solved
+    if(!solved(dot)){                                                                  //checks if the board is solved
       removeConnection(dot, previousDot)                                          //if not remove the connection between the dot and previous dot
     }
   }
