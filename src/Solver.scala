@@ -6,8 +6,8 @@ object Solver {
     })
 
     // Initialize the horizontal and vertical lines the board consists of.
-    val hLine: Array[Option[Boolean]] = Array.fill(width+1)(None)
-    val vLine: Array[Option[Boolean]] = Array.fill(height+1)(None)
+    val hLine: List[Option[Boolean]] = List.fill(width+1)(None)
+    val vLine: List[Option[Boolean]] = List.fill(height+1)(None)
 
     val board = new Board(
       width, height, numbers,

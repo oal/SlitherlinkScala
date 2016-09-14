@@ -4,15 +4,15 @@
 class Board(val width: Int,
             val height: Int,
             val numbers: List[List[Option[Int]]],
-            var vertical: List[Array[Option[Boolean]]],
-            var horizontal: List[Array[Option[Boolean]]]) {
+            var vertical: List[List[Option[Boolean]]],
+            var horizontal: List[List[Option[Boolean]]]) {
 
   // Make a full copy of board in its current state
   def copy() = {
     new Board(
       width, height, numbers,
-      vertical.map(l => l.clone()),
-      horizontal.map(l => l.clone())
+      vertical,//.map(l => l.clone()),
+      horizontal//.map(l => l.clone())
     )
   }
 
@@ -88,22 +88,38 @@ class Board(val width: Int,
   // Set sides (for squares)
   @inline def setTop(x: Int, y: Int, value: Boolean) = {
     if (x < 0 || y < 0 || x > width || y > width) None
-    else horizontal(y)(x) = Some(value)
+    else horizontal = setHorizontal(x, y, value)
+    //else horizontal(y)(x) = Some(value)
   }
 
   @inline def setBottom(x: Int, y: Int, value: Boolean) = {
     if (x < 0 || y < 0 || x > width || y > height-1) None
-    else horizontal(y+1)(x) = Some(value)
+    else horizontal = setHorizontal(x, y+1, value)
+    //else horizontal(y+1)(x) = Some(value)
   }
 
   @inline def setLeft(x: Int, y: Int, value: Boolean) = {
     if (x < 0 || y < 0 || x > width || y > width) None
-    else vertical(y)(x) = Some(value)
+    else vertical = setVertical(x, y, value)
+    //else vertical(y)(x) = Some(value)
   }
 
   @inline def setRight(x: Int, y: Int, value: Boolean) = {
     if (x < 0 || y < 0 || x > width-1 || y > width) None
-    else vertical(y)(x+1) = Some(value)
+    else vertical = setVertical(x+1, y, value)
+    //else vertical(y)(x+1) = Some(value)
+  }
+
+  def setVertical(x: Int, y: Int, value: Boolean) = {
+    val newCol = vertical(y).take(x) ++ List(Some(value)) ++ vertical(y).drop(x + 1)
+    vertical = vertical.take(y) ++ List(newCol) ++ vertical.drop(y + 1)
+    vertical
+  }
+
+  def setHorizontal(x: Int, y: Int, value: Boolean) = {
+    val newRow = horizontal(y).take(x) ++ List(Some(value)) ++ horizontal(y).drop(x + 1)
+    horizontal = horizontal.take(y) ++ List(newRow) ++ horizontal.drop(y + 1)
+    horizontal
   }
 
   // Get lines (from dots)
@@ -128,7 +144,8 @@ class Board(val width: Int,
   // Set lines (from dots)
   def setLineUp(x: Int, y: Int, value: Boolean): Unit = {
     if (y > 0) {
-      vertical(y - 1)(x) = Some(value)
+      //vertical(y - 1)(x) = Some(value)
+      vertical = setVertical(x, y-1, value)
 
       if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
       if (getLineDown(x, y).isEmpty) setLineDown(x, y, false)
@@ -137,7 +154,8 @@ class Board(val width: Int,
   }
 
   def setLineRight(x: Int, y: Int, value: Boolean): Unit = {
-    horizontal(y)(x) = Some(value)
+    //horizontal(y)(x) = Some(value)
+    horizontal = setHorizontal(x, y, value)
 
     if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
     if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
@@ -145,7 +163,8 @@ class Board(val width: Int,
   }
 
   def setLineDown(x: Int, y: Int, value: Boolean): Unit = {
-    vertical(y)(x) = Some(value)
+    //vertical(y)(x) = Some(value)
+    vertical = setVertical(x, y, value)
 
     if (getLineLeft(x, y).isEmpty) setLineLeft(x, y, false)
     if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
@@ -154,7 +173,8 @@ class Board(val width: Int,
 
   def setLineLeft(x: Int, y: Int, value: Boolean): Unit = {
     if (x > 0) {
-      horizontal(y)(x - 1) = Some(value)
+      //horizontal(y)(x - 1) = Some(value)
+      horizontal = setHorizontal(x-1, y, value)
 
       if (getLineUp(x, y).isEmpty) setLineUp(x, y, false)
       if (getLineRight(x, y).isEmpty) setLineRight(x, y, false)
