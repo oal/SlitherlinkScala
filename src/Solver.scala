@@ -327,12 +327,15 @@ class Solver(val board: Board) {
     }
   }
 
-  def solved:Boolean = {
+  def solved(d:Dot):Boolean = {
     for(y <- board.row;
-      x <- y.square)
+        x <- y.square)
       if (x.value != -1 && !x.isFull)
         return false
-    true
+    if(!loop(d))
+      false
+    else
+      true
   }
 
   def findStartingDot:(Dot, Dot) = {
