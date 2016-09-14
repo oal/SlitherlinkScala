@@ -8,7 +8,7 @@ object Runner extends App {
 
   val start = Calendar.getInstance().getTimeInMillis
   val b = new BoardParser("puzzles/puzzle1")
-  val sb = new Solver(b, 1).getBoards
+  val sb = new Solver(b.board(1)).getSolution
   println(Calendar.getInstance().getTimeInMillis - start)
 
 }

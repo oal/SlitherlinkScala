@@ -2,10 +2,8 @@
   * Created by Torsvik on 07/09/2016.
   */
 
-class SolutionPrinter(boards: BoardParser, i: Int) {
-  private def b = boards.board(i)
-
-  for (y <- b.row) {
+class SolutionPrinter(board: Board) {
+  for (y <- board.row) {
     for (x <- y.square) {
       print("+" + getHorSymbol(x.y, x.x, 'Up))
     }
@@ -15,20 +13,20 @@ class SolutionPrinter(boards: BoardParser, i: Int) {
     }
     println(getVerSymbol(y.square.last.y, y.square.last.x, 'Right))
   }
-  for (x <- b.row.last.square) {
+  for (x <- board.row.last.square) {
     print("+" + getHorSymbol(x.y, x.x, 'Down))
   }
   println("+")
 
   def getHorSymbol(y: Int, x: Int, dir: Symbol): String = {
-    if (b.row(y).square(x).connector(dir).set)
+    if (board.row(y).square(x).connector(dir).set)
       "-"
     else
       " "
   }
 
   def getVerSymbol(y: Int, x: Int, dir: Symbol): String = {
-    if (b.row(y).square(x).connector(dir).set)
+    if (board.row(y).square(x).connector(dir).set)
       "|"
     else
       " "

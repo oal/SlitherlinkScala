@@ -1,24 +1,19 @@
-/**
-  * Created by André Torsvik on 06/09/2016.
-  */
+class Solver(val board: Board) {
+  Rules.applyRules(board)
+  Rules.applyThrees(board)
 
-class Solver(boards:BoardParser, i:Int) {
-  private val b = new Corners(
-    new Threes(boards, i).getBoard, i
-  ).getBoard.board(i)                                                             //Gets the board at i
-  def getBoards = boards                                                          //Return the board of this object
   val dots = new Dots                                                             //Holds all the dots on the board
   initDots()
 
   start                                                                           //Call the function start to begin solving the board
-  val sp = new SolutionPrinter(boards, i)                                         //After a solution has been found, print the solution
+  val sp = new SolutionPrinter(board)                                         //After a solution has been found, print the solution
 
   /**
     * @version 1.0 Sep 13, 2016.
     * Dots has a container 'x' whose indices are x-coordinates and contents is of class x
     */
   class Dots{
-    val x = for ( x <- 0 to b.row(0).square.size) yield new x(x)                  //x is a container holding all ys for that x
+    val x = for ( x <- 0 to board.row(0).square.size) yield new x(x)                  //x is a container holding all ys for that x
   }
 
   /**
@@ -28,7 +23,7 @@ class Solver(boards:BoardParser, i:Int) {
     * @param x
     */
   class x(x:Int){
-    val y = for ( y <- 0 to b.row.size) yield new Dot(x, y)                       //y is a container holding all dots for that y in the param x
+    val y = for ( y <- 0 to board.row.size) yield new Dot(x, y)                       //y is a container holding all dots for that y in the param x
   }
 
   /**
@@ -141,15 +136,15 @@ class Solver(boards:BoardParser, i:Int) {
         && !dots.x(d.x).y(d.y-1).links.contains(d))
       {
         if(d.x == 0                                                               //If the dot's x is 0 check if the northeast square is full
-          && !b.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
+          && !board.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
           true
-        else if(d.x == b.row(0).square.size                                       //If the dot's x is at the right edge check if the northwest square is full
-          && !b.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
+        else if(d.x == board.row(0).square.size                                       //If the dot's x is at the right edge check if the northwest square is full
+          && !board.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
           true
         else if (d.x > 0                                                          //If the dot is at neither of x's edges, check if both north squares are full
-          && d.x < b.row(0).square.size                                           //if neither are full the move is allowed
-          && !b.row(d.y-1).square(d.x-1).isFull
-          && !b.row(d.y-1).square(d.x).isFull)
+          && d.x < board.row(0).square.size                                           //if neither are full the move is allowed
+          && !board.row(d.y-1).square(d.x-1).isFull
+          && !board.row(d.y-1).square(d.x).isFull)
           true
         else
           false
@@ -163,15 +158,15 @@ class Solver(boards:BoardParser, i:Int) {
         && !dots.x(d.x+1).y(d.y).links.contains(d))
       {
         if (d.y == 0                                                              //If the dot's y is 0 check if the southeast square is full
-          && !b.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
+          && !board.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
           true
-        else if(d.y == b.row.size                                                 //If the dot's y is at the bottom edge check if the northeast square is full
-          && !b.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
+        else if(d.y == board.row.size                                                 //If the dot's y is at the bottom edge check if the northeast square is full
+          && !board.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
           true
-        else if(b.row.size > d.y                                                  //If the dot is at neither of y's edges, check if both east squares are full
+        else if(board.row.size > d.y                                                  //If the dot is at neither of y's edges, check if both east squares are full
           && d.y > 0                                                              //if neither are full the move is allowed
-          && !b.row(d.y).square(d.x).isFull
-          && !b.row(d.y-1).square(d.x).isFull)
+          && !board.row(d.y).square(d.x).isFull
+          && !board.row(d.y-1).square(d.x).isFull)
           true
         else
           false
@@ -185,15 +180,15 @@ class Solver(boards:BoardParser, i:Int) {
         && !dots.x(d.x).y(d.y+1).links.contains(d))
       {
         if(d.x == 0                                                               //If the dot's x is 0 check if the southeast square is full
-          && !b.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
+          && !board.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
           true
-        else if(d.x == b.row(0).square.size                                       //If the dot's x is at the right edge check if the southwest square is full
-          && !b.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
+        else if(d.x == board.row(0).square.size                                       //If the dot's x is at the right edge check if the southwest square is full
+          && !board.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
           true
         else if(d.x > 0                                                           //If the dot is at neither of x's edges, check if both south squares are full
-          && d.x < b.row(d.y).square.size                                         //if neither are full the move is allowed
-          && !b.row(d.y).square(d.x).isFull
-          && !b.row(d.y).square(d.x-1).isFull)
+          && d.x < board.row(d.y).square.size                                         //if neither are full the move is allowed
+          && !board.row(d.y).square(d.x).isFull
+          && !board.row(d.y).square(d.x-1).isFull)
           true
         else
           false
@@ -207,15 +202,15 @@ class Solver(boards:BoardParser, i:Int) {
         && !dots.x(d.x-1).y(d.y).links.contains(d))
       {
         if(d.y == 0                                                               //If the dot's y is 0 check if the southwest square is full
-          && !b.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
+          && !board.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
           true
-        else if(d.y == b.row.size                                                 //If the dot's y is at the bottom edge check if the northwest square is full
-          && !b.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
+        else if(d.y == board.row.size                                                 //If the dot's y is at the bottom edge check if the northwest square is full
+          && !board.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
           true
-        else if(d.y < b.row.size                                                  //If the dot is at neither of y's edges, check if both west squares are full
+        else if(d.y < board.row.size                                                  //If the dot is at neither of y's edges, check if both west squares are full
           && d.y > 0                                                              //if neither are full the move is allowed
-          && !b.row(d.y).square(d.x-1).isFull
-          && !b.row(d.y-1).square(d.x-1).isFull)
+          && !board.row(d.y).square(d.x-1).isFull
+          && !board.row(d.y-1).square(d.x-1).isFull)
           true
         else
           false
@@ -243,100 +238,100 @@ class Solver(boards:BoardParser, i:Int) {
     dot.links.add(toDot)
     toDot.links.add(dot)
     if(toDot.y - dot.y < 0){
-      if(dot.x > b.row(0).square.size-1)
-        boards.board(i).setConnector(toDot.y, toDot.x-1, 'Right, s = true, l)
+      if(dot.x > board.row(0).square.size-1)
+        board.setConnector(toDot.y, toDot.x-1, 'Right, s = true, l)
       else
-        boards.board(i).setConnector(toDot.y, toDot.x, 'Left, s = true, l)
+        board.setConnector(toDot.y, toDot.x, 'Left, s = true, l)
     }
     else if(toDot.x - dot.x > 0){
-      if(dot.y > b.row.size-1)
-        boards.board(i).setConnector(dot.y-1, dot.x, 'Down, s = true, l)
+      if(dot.y > board.row.size-1)
+        board.setConnector(dot.y-1, dot.x, 'Down, s = true, l)
       else
-        boards.board(i).setConnector(dot.y, dot.x, 'Up, s = true, l)
+        board.setConnector(dot.y, dot.x, 'Up, s = true, l)
     }
     else if(toDot.y - dot.y > 0){
-      if(dot.x > b.row(dot.y).square.size-1)
-        boards.board(i).setConnector(dot.y, dot.x-1, 'Right, s = true, l)
+      if(dot.x > board.row(dot.y).square.size-1)
+        board.setConnector(dot.y, dot.x-1, 'Right, s = true, l)
       else
-        boards.board(i).setConnector(dot.y, dot.x, 'Left, s = true, l)
+        board.setConnector(dot.y, dot.x, 'Left, s = true, l)
     }
     else{
-      if (dot.y > b.row.size-1)
-        boards.board(i).setConnector(toDot.y-1, toDot.x, 'Down, s = true, l)
+      if (dot.y > board.row.size-1)
+        board.setConnector(toDot.y-1, toDot.x, 'Down, s = true, l)
       else
-        boards.board(i).setConnector(toDot.y, toDot.x, 'Up, s = true, l)
+        board.setConnector(toDot.y, toDot.x, 'Up, s = true, l)
     }
   }
 
   def removeConnection(dot:Dot, prevDot:Dot) = {
     if(prevDot.y - dot.y > 0){
-      if(dot.x > b.row(dot.y).square.size-1
-        && !b.row(dot.y).square(dot.x-1).connector('Right).locked)
+      if(dot.x > board.row(dot.y).square.size-1
+        && !board.row(dot.y).square(dot.x-1).connector('Right).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(dot.y, dot.x-1, 'Right, s = false, l = false)
+        board.setConnector(dot.y, dot.x-1, 'Right, s = false, l = false)
       }
-      else if(dot.x <= b.row(dot.y).square.size-1
-        && !b.row(dot.y).square(dot.x).connector('Left).locked)
+      else if(dot.x <= board.row(dot.y).square.size-1
+        && !board.row(dot.y).square(dot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(dot.y, dot.x, 'Left, s = false, l = false)
+        board.setConnector(dot.y, dot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x < 0){
-      if(prevDot.y > b.row.size-1
-        && !b.row(prevDot.y-1).square(prevDot.x).connector('Down).locked)
+      if(prevDot.y > board.row.size-1
+        && !board.row(prevDot.y-1).square(prevDot.x).connector('Down).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
+        board.setConnector(prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
       }
-      else if(prevDot.y <= b.row.size-1
-        && !b.row(prevDot.y).square(prevDot.x).connector('Up).locked)
+      else if(prevDot.y <= board.row.size-1
+        && !board.row(prevDot.y).square(prevDot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(prevDot.y, prevDot.x, 'Up, s = false, l = false)
+        board.setConnector(prevDot.y, prevDot.x, 'Up, s = false, l = false)
       }
     }
     else if(prevDot.y - dot.y < 0){
-      if(prevDot.x > b.row(prevDot.y).square.size-1
-        && !b.row(prevDot.y).square(prevDot.x-1).connector('Right).locked)
+      if(prevDot.x > board.row(prevDot.y).square.size-1
+        && !board.row(prevDot.y).square(prevDot.x-1).connector('Right).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
+        board.setConnector(prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
       }
-      else if(prevDot.x <= b.row(prevDot.y).square.size-1
-        && !b.row(prevDot.y).square(prevDot.x).connector('Left).locked)
+      else if(prevDot.x <= board.row(prevDot.y).square.size-1
+        && !board.row(prevDot.y).square(prevDot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(prevDot.y, prevDot.x, 'Left, s = false, l = false)
+        board.setConnector(prevDot.y, prevDot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x > 0){
-      if(dot.y > b.row.size-1
-        && !b.row(dot.y-1).square(dot.x).connector('Down).locked)
+      if(dot.y > board.row.size-1
+        && !board.row(dot.y-1).square(dot.x).connector('Down).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(dot.y-1, dot.x, 'Down, s = false, l = false)
+        board.setConnector(dot.y-1, dot.x, 'Down, s = false, l = false)
       }
-      else if(dot.y <= b.row.size-1
-        && !b.row(dot.y).square(dot.x).connector('Up).locked)
+      else if(dot.y <= board.row.size-1
+        && !board.row(dot.y).square(dot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.board(i).setConnector(dot.y, dot.x, 'Up, s = false, l = false)
+        board.setConnector(dot.y, dot.x, 'Up, s = false, l = false)
       }
     }
   }
 
   def solved:Boolean = {
-    for(y <- b.row;
+    for(y <- board.row;
       x <- y.square)
       if (x.value != -1 && !x.isFull)
         return false
@@ -352,7 +347,7 @@ class Solver(boards:BoardParser, i:Int) {
   }
 
   def initDots(): Unit = {
-    for(y <- b.row;
+    for(y <- board.row;
       x <- y.square;
       c <- x.connector)
       if(c._2.set){
@@ -367,4 +362,5 @@ class Solver(boards:BoardParser, i:Int) {
       }
   }
 
+  def getSolution = board
 }
