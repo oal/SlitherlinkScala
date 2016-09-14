@@ -83,7 +83,7 @@ class Threes(boards:Boards, i:Int) {
         }
 
         if( x.x < b.row(x.y).square.size - 1
-          && b.row(x.y).square(x.x+1).value == 0 ){                               //Tries to find a three right of the square
+          && b.row(x.y).square(x.x+1).value == 3 ){                               //Tries to find a three right of the square
           boards.setConnector(i, x.y, x.x, "Right", s = true, l = true)                     //Sets the right connector of the square
           boards.setConnector(i, x.y, x.x, "Left", s = true, l = true)                      //Sets the left connector of the square
           boards.setConnector(i, x.y, x.x+1, "Right", s = true, l = true)                   //Sets the right connector of the adjacent square

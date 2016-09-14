@@ -14,14 +14,14 @@ class Boards(path:String) {
 
   class board(boardfile: List[String], start: (Int, Int)) {
     val getBoard = for (i <- start._1 until start._2 + start._1) yield boardfile(i)
-    println(start._2 + "x" + start._2)
+
     val row = for (i <- start._1 until start._2 + start._1) yield new row(boardfile(i), i-start._1)
   }
 
   class row(row: String, rownumber: Int) {
     val getRow = row
     val square = for (i <- row.split(" ").indices) yield new square(i, rownumber, stringToInt(row.split(" ")(i)))
-    println("")
+
     private def stringToInt(s: String): Int = if (s == "*") -1 else s.toInt
   }
 
@@ -30,14 +30,17 @@ class Boards(path:String) {
     val x = nx
     val y = ny
 
-    print("( " + x + ", " + y + " )")
-
     val connector = Map[String, Connector](
       ("Up", new Connector(false)),
       ("Down", new Connector(false)),
       ("Left", new Connector(false)),
       ("Right", new Connector(false))
     )
+
+    def isEmpty:Boolean = {
+      val c = for(i <- connector if i._2.set) yield 1
+      c.isEmpty
+    }
 
     def isFull:Boolean = {
       if(value != -1){
@@ -65,7 +68,7 @@ class Boards(path:String) {
                      }
       case "Down" => if( y < board(b).row.size - 1 ){
                         board(b).row(y+1).square(x).connector("Up").set = s
-                        board(b).row(y-1).square(x).connector("Up").locked = l
+                        board(b).row(y+1).square(x).connector("Up").locked = l
                       }
       case "Left" => if( x > 0) {
                         board(b).row(y).square(x-1).connector("Right").set = s
