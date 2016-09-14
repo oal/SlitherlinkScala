@@ -6,9 +6,12 @@ import java.util.Calendar
 
 object Runner extends App {
 
-  val start = Calendar.getInstance().getTimeInMillis
-  val b = new BoardParser("puzzles/puzzle1")
-  val sb = new Solver(b.board(1)).getSolution
-  println(Calendar.getInstance().getTimeInMillis - start)
+  val parser = new BoardParser("puzzles/puzzle1")
 
+  parser.boards.foreach(board => {
+    val start = Calendar.getInstance().getTimeInMillis
+    new Solver(board).solve()
+    new SolutionPrinter(board)
+    println(Calendar.getInstance().getTimeInMillis - start)
+  })
 }

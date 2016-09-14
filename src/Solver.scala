@@ -4,10 +4,7 @@ class Solver(val board: Board) {
 
   val dots = new Dots                                                             //Holds all the dots on the board
   initDots()
-
-  start                                                                           //Call the function start to begin solving the board
-  val sp = new SolutionPrinter(board)                                         //After a solution has been found, print the solution
-
+                                                                    //Call the function start to begin solving the board
   /**
     * @version 1.0 Sep 13, 2016.
     * Dots has a container 'x' whose indices are x-coordinates and contents is of class x
@@ -62,7 +59,7 @@ class Solver(val board: Board) {
     * @version 1.1 Sep 14, 2016.
     * calls move with starting point at the parameter coordinates
     */
-  def start = {
+  def solve() = {
     if(findStartingDot._1 != null)
       move(findStartingDot._1, findStartingDot._2)
   }
@@ -96,7 +93,7 @@ class Solver(val board: Board) {
       move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
     }
     if(dot.links.full && !loop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
-      start
+      solve()
     }
     if(!solved){                                                                  //checks if the board is solved
       removeConnection(dot, previousDot)                                          //if not remove the connection between the dot and previous dot
@@ -362,5 +359,4 @@ class Solver(val board: Board) {
       }
   }
 
-  def getSolution = board
 }
