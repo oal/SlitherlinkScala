@@ -2,7 +2,7 @@
   * Created by André Torsvik on 06/09/2016.
   */
 
-class Solver(boards:Boards, i:Int) {
+class Solver(boards:BoardParser, i:Int) {
   private val b = new Corners(
     new Threes(boards, i).getBoard, i
   ).getBoard.board(i)                                                             //Gets the board at i

@@ -2,7 +2,7 @@
   * Created by Torsvik on 06/09/2016.
   */
 
-class Corners(boards:Boards, i:Int) {
+class Corners(boards:BoardParser, i:Int) {
   private val b = boards.board(i)
 
   //check top left corner, set connectors according to value

@@ -2,21 +2,21 @@
   * Created by Torsvik on 07/09/2016.
   */
 
-class SolutionPrinter(boards:Boards, i:Int) {
+class SolutionPrinter(boards:BoardParser, i:Int) {
   private def b = boards.board(i)
 
   for(y <- b.row){
     for(x <- y.square){
-      print("+\t" +getHorSymbol(x.y, x.x, "Up") + "\t")
+      print("+" +getHorSymbol(x.y, x.x, "Up"))
     }
     println("+")
     for(x <- y.square){
-      print(getVerSymbol(x.y, x.x, "Left") + "\t" + x.value + "\t")
+      print(getVerSymbol(x.y, x.x, "Left") + " ")
     }
     println(getVerSymbol(y.square.last.y, y.square.last.x, "Right"))
   }
   for(x <- b.row.last.square){
-    print("+\t" +getHorSymbol(x.y, x.x, "Down") + "\t")
+    print("+" +getHorSymbol(x.y, x.x, "Down"))
   }
   println("+")
 

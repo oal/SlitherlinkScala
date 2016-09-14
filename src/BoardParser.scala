@@ -1,31 +1,34 @@
-/**
-  * Created by Torsvik on 05/09/2016.
-  */
-
 import scala.io.Source
 
-class Boards(path:String) {
+class BoardParser(path:String) {
   private val boardFile = Source.fromFile(path).getLines.toList
+
+  // Tuples of start position of board, and side length
   private val startList = for (i <- boardFile if i.contains("x"))
-                          yield Tuple2(boardFile.indexOf(i) + 1, i.split("x").head.toInt)
+    yield Tuple2(boardFile.indexOf(i) + 1, i.split("x").head.toInt)
+
+  // Create Board instances from lines
+  val numPuzzles = boardFile.head.toInt
   val getBoards = boardFile
-  val board = for (i <- 1 to boardFile.head.toInt)
-              yield new board(boardFile, startList(i - 1))
+  val board = for (i <- 0 until numPuzzles)
+              yield new Board(boardFile, startList(i)._1, startList(i)._2)
 
-  class board(boardfile: List[String], start: (Int, Int)) {
-    val getBoard = for (i <- start._1 until start._2 + start._1) yield boardfile(i)
 
-    val row = for (i <- start._1 until start._2 + start._1) yield new row(boardfile(i), i-start._1)
+  class Board(boardfile: List[String], startLine: Int, sideLength: Int) {
+    // Slice board file to get appropriate lines
+    val getBoard = boardfile.slice(startLine, startLine + sideLength)
+
+    // Create row from text line and what line number it is
+    val row = getBoard.zipWithIndex.map { case (line, lineNum) => new Row(line, lineNum)}
   }
 
-  class row(row: String, rownumber: Int) {
+  class Row(row: String, rownumber: Int) {
     val getRow = row
-    val square = for (i <- row.split(" ").indices) yield new square(i, rownumber, stringToInt(row.split(" ")(i)))
-
-    private def stringToInt(s: String): Int = if (s == "*") -1 else s.toInt
+    val square = for (i <- row.split(" ").indices)
+      yield new Square(i, rownumber, Utils.toInt(row.split(" ")(i)))
   }
 
-  class square(nx:Int, ny:Int, nvalue:Int) {
+  class Square(nx:Int, ny:Int, nvalue:Int) {
     val value = nvalue
     val x = nx
     val y = ny

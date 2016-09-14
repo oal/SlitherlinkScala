@@ -2,7 +2,7 @@
   * Created by Torsvik on 06/09/2016.
   */
 
-class Threes(boards:Boards, i:Int) {
+class Threes(boards:BoardParser, i:Int) {
   private val b = boards.board(i)
 
   for( y <- b.row){
