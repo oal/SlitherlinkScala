@@ -349,11 +349,6 @@ class Solver(boards:Boards, i:Int) {
       x <- y.square)
       if (x.value != -1 && !x.isFull)
         return false
-    /*for(x <- dots.x;
-      dot <- x.y){
-      if(!dot.links.full || !dot.links.empty)
-        return false
-    }*/
     true
   }
 

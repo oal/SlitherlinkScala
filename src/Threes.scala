@@ -3,7 +3,7 @@
   */
 
 class Threes(boards:Boards, i:Int) {
-  private def b = boards.board(i)
+  private val b = boards.board(i)
 
   for( y <- b.row){
     for( x <- y.square ){

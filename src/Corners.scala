@@ -3,7 +3,7 @@
   */
 
 class Corners(boards:Boards, i:Int) {
-  private def b = boards.board(i)
+  private val b = boards.board(i)
 
   //check top left corner, set connectors according to value
   if( b.row(0).square(0).value == 3 ) {
