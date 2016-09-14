@@ -244,27 +244,27 @@ class Solver(boards:BoardParser, i:Int) {
     toDot.links.add(dot)
     if(toDot.y - dot.y < 0){
       if(dot.x > b.row(0).square.size-1)
-        boards.setConnector(i, toDot.y, toDot.x-1, 'Right, s = true, l)
+        boards.board(i).setConnector(toDot.y, toDot.x-1, 'Right, s = true, l)
       else
-        boards.setConnector(i, toDot.y, toDot.x, 'Left, s = true, l)
+        boards.board(i).setConnector(toDot.y, toDot.x, 'Left, s = true, l)
     }
     else if(toDot.x - dot.x > 0){
       if(dot.y > b.row.size-1)
-        boards.setConnector(i, dot.y-1, dot.x, 'Down, s = true, l)
+        boards.board(i).setConnector(dot.y-1, dot.x, 'Down, s = true, l)
       else
-        boards.setConnector(i, dot.y, dot.x, 'Up, s = true, l)
+        boards.board(i).setConnector(dot.y, dot.x, 'Up, s = true, l)
     }
     else if(toDot.y - dot.y > 0){
       if(dot.x > b.row(dot.y).square.size-1)
-        boards.setConnector(i, dot.y, dot.x-1, 'Right, s = true, l)
+        boards.board(i).setConnector(dot.y, dot.x-1, 'Right, s = true, l)
       else
-        boards.setConnector(i, dot.y, dot.x, 'Left, s = true, l)
+        boards.board(i).setConnector(dot.y, dot.x, 'Left, s = true, l)
     }
     else{
       if (dot.y > b.row.size-1)
-        boards.setConnector(i, toDot.y-1, toDot.x, 'Down, s = true, l)
+        boards.board(i).setConnector(toDot.y-1, toDot.x, 'Down, s = true, l)
       else
-        boards.setConnector(i, toDot.y, toDot.x, 'Up, s = true, l)
+        boards.board(i).setConnector(toDot.y, toDot.x, 'Up, s = true, l)
     }
   }
 
@@ -275,14 +275,14 @@ class Solver(boards:BoardParser, i:Int) {
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x-1, 'Right, s = false, l = false)
+        boards.board(i).setConnector(dot.y, dot.x-1, 'Right, s = false, l = false)
       }
       else if(dot.x <= b.row(dot.y).square.size-1
         && !b.row(dot.y).square(dot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x, 'Left, s = false, l = false)
+        boards.board(i).setConnector(dot.y, dot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x < 0){
@@ -291,14 +291,14 @@ class Solver(boards:BoardParser, i:Int) {
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
+        boards.board(i).setConnector(prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
       }
       else if(prevDot.y <= b.row.size-1
         && !b.row(prevDot.y).square(prevDot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x, 'Up, s = false, l = false)
+        boards.board(i).setConnector(prevDot.y, prevDot.x, 'Up, s = false, l = false)
       }
     }
     else if(prevDot.y - dot.y < 0){
@@ -307,14 +307,14 @@ class Solver(boards:BoardParser, i:Int) {
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
+        boards.board(i).setConnector(prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
       }
       else if(prevDot.x <= b.row(prevDot.y).square.size-1
         && !b.row(prevDot.y).square(prevDot.x).connector('Left).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, prevDot.y, prevDot.x, 'Left, s = false, l = false)
+        boards.board(i).setConnector(prevDot.y, prevDot.x, 'Left, s = false, l = false)
       }
     }
     else if(prevDot.x - dot.x > 0){
@@ -323,14 +323,14 @@ class Solver(boards:BoardParser, i:Int) {
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y-1, dot.x, 'Down, s = false, l = false)
+        boards.board(i).setConnector(dot.y-1, dot.x, 'Down, s = false, l = false)
       }
       else if(dot.y <= b.row.size-1
         && !b.row(dot.y).square(dot.x).connector('Up).locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
-        boards.setConnector(i, dot.y, dot.x, 'Up, s = false, l = false)
+        boards.board(i).setConnector(dot.y, dot.x, 'Up, s = false, l = false)
       }
     }
   }
