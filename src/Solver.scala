@@ -2,57 +2,44 @@ class Solver(val board: Board) {
   Rules.applyRules(board)
   Rules.applyThrees(board)
 
-  val dots = new Dots                                                             //Holds all the dots on the board
-  initDots()
-                                                                    //Call the function start to begin solving the board
   /**
     * @version 1.0 Sep 13, 2016.
-    * Dots has a container 'x' whose indices are x-coordinates and contents is of class x
+    * DotContainer has a container 'x' whose indices are x-coordinates and contents is of class x
     */
-  class Dots{
+  object dots{
     val x = for ( x <- 0 to board.row(0).square.size) yield new x(x)                  //x is a container holding all ys for that x
+
+    for(y <- board.row;
+        x <- y.square;
+        c <- x.connector)
+      if(c._2.set){
+        if(c._1 == 'Up)
+          makeConnection(this.x(x.x).y(x.y), this.x(x.x+1).y(x.y), c._2.locked)
+        else if(c._1 == 'Right)
+          makeConnection(this.x(x.x+1).y(x.y), this.x(x.x+1).y(x.y+1), c._2.locked)
+        else if(c._1 == 'Down)
+          makeConnection(this.x(x.x).y(x.y+1), this.x(x.x+1).y(x.y+1), c._2.locked)
+        else if(c._1 == 'Left)
+          makeConnection(this.x(x.x).y(x.y), this.x(x.x).y(x.y+1), c._2.locked)
+      }
+
+    /**
+      * @version 1.0 Sep 13, 2016.
+      * x has a container 'y' whose indices are y-coordinates and contents is of class Dot.
+      * creates a Dot for each y for the given x parameter
+      * @param x
+      */
+    class x(x:Int){
+      val y = for ( y <- 0 to board.row.size) yield new Dot(x, y)                       //y is a container holding all dots for that y in the param x
+    }
   }
 
-  /**
-    * @version 1.0 Sep 13, 2016.
-    * x has a container 'y' whose indices are y-coordinates and contents is of class Dot.
-    * creates a Dot for each y for the given x parameter
-    * @param x
-    */
-  class x(x:Int){
-    val y = for ( y <- 0 to board.row.size) yield new Dot(x, y)                       //y is a container holding all dots for that y in the param x
-  }
-
-  /**
-    * @version 1.0 Sep 13, 2016.
-    * A dot with the given x and y positions given in the parameter.
-    * Dot has an object 'links' of class Links whose contents are the neighboring dots with which it is connected
-    * @param xPos
-    * @param yPos
-    */
-  class Dot(xPos:Int, yPos:Int){
-    val x = xPos
-    val y = yPos
-    val links = new Links(null, null)
-  }
-
-  /**
-    * @version 1.0 Sep 13, 2016.
-    * Holds two dots with which another dot shares a connection
-    * @param dot1
-    * @param dot2
-    */
-  class Links(dot1:Dot, dot2:Dot){
-    var d1 = dot1
-    var d2 = dot2
-
-    def getNonEmpty:Dot = if(d1 != null) d1 else if(d2 != null) d2 else null
-    def empty:Boolean = d1 == null && d2 == null
-    def full:Boolean = d1 != null && d2 != null                                   //returns boolean value true if both dots are not null
-    def add(d:Dot) = if(d1 == null && !contains(d)) d1 = d
-                      else if(d2 == null && !contains(d)) d2 = d                  //add parameter dot to whichever dot is null
-    def contains(d:Dot) = d1 == d || d2 == d                                      //return boolean value true if the parameter dot is either of the dots
-    def remove(d:Dot) = if(d1 == d) d1 = null else if(d2 == d) d2 = null          //sets a dot to null if the parameter dot is the same as that dot
+  def findStartingDot:(Dot, Dot) = {
+    for(x <- dots.x;
+        y <- x.y)
+      if(!y.links.empty && !y.links.full)
+        return (y, y.links.getNonEmpty)
+    (null, null)
   }
 
   /**
@@ -64,43 +51,18 @@ class Solver(val board: Board) {
       move(findStartingDot._1, findStartingDot._2)
   }
 
-  /**
-    * @version 1.1 Sep 14, 2016.
-    * From the given parameter dot, check if a move in the directions 'Up, 'Right, 'Down & 'Left respectively
-    * are valid moves, if so calls itself recursively. If no valid moves can be made, check to see if the board is solved.
-    * If the board is solved no other moves are valid and backtracks without making any further calls to itself. If however
-    * the board is not solved and none of the moves are valid, removes the connection between the dot and the previous dot
-    * and backtracks 1 step to the call with the previous dot and proceeds. When completed, given a valid starting point,
-    * produces a linked list as the solution.
-    * @param dot
-    * @param previousDot
-    */
-  def move(dot:Dot, previousDot:Dot):Unit = {
-    if(validMove(dot, 'Up)){                                                     //checks if up is a valid move
-      makeConnection(dot, dots.x(dot.x).y(dot.y-1))                               //makes the connections between the dot and the dot above
-      move(dots.x(dot.x).y(dot.y-1), dot)                                         //calls move with the above dot
-    }
-    if(validMove(dot, 'Right)){                                                  //checks if right is a valid move
-      makeConnection(dot, dots.x(dot.x+1).y(dot.y))                               //makes the connections between the dot and the right dot
-      move(dots.x(dot.x+1).y(dot.y), dot)                                         //calls move with the right dot
-    }
-    if(validMove(dot, 'Down)){                                                   //checks if down is a valid move
-      makeConnection(dot, dots.x(dot.x).y(dot.y+1))                               //makes the connections between the dot and the dot below
-      move(dots.x(dot.x).y(dot.y+1), dot)                                         //calls move with the dot below
-    }
-    if(validMove(dot, 'Left)){                                                   //checks if left is a valid move
-      makeConnection(dot, dots.x(dot.x-1).y(dot.y))                               //makes the connection between the dot and the left dot
-      move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
-    }
-    if(dot.links.full && !loop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
-      solve()
-    }
-    if(!solved(dot)){                                                                  //checks if the board is solved
-      removeConnection(dot, previousDot)                                          //if not remove the connection between the dot and previous dot
-    }
+  def isSolved(d:Dot):Boolean = {
+    for(y <- board.row;
+        x <- y.square)
+      if (x.value != -1 && !x.isFull)
+        return false
+    if(!isLoop(d))
+      false
+    else
+      true
   }
 
-  def loop(d:Dot):Boolean = {
+  def isLoop(d:Dot):Boolean = {
     def next(n:Dot, p:Dot):Boolean = {
       if(n.links.full && n==d)
         true
@@ -118,13 +80,49 @@ class Solver(val board: Board) {
   }
 
   /**
+    * @version 1.1 Sep 14, 2016.
+    * From the given parameter dot, check if a move in the directions 'Up, 'Right, 'Down & 'Left respectively
+    * are valid moves, if so calls itself recursively. If no valid moves can be made, check to see if the board is solved.
+    * If the board is solved no other moves are valid and backtracks without making any further calls to itself. If however
+    * the board is not solved and none of the moves are valid, removes the connection between the dot and the previous dot
+    * and backtracks 1 step to the call with the previous dot and proceeds. When completed, given a valid starting point,
+    * produces a linked list as the solution.
+    * @param dot
+    * @param previousDot
+    */
+  def move(dot:Dot, previousDot:Dot):Unit = {
+    if(isValidMove(dot, 'Up)){                                                     //checks if up is a valid move
+      makeConnection(dot, dots.x(dot.x).y(dot.y-1))                               //makes the connections between the dot and the dot above
+      move(dots.x(dot.x).y(dot.y-1), dot)                                         //calls move with the above dot
+    }
+    if(isValidMove(dot, 'Right)){                                                  //checks if right is a valid move
+      makeConnection(dot, dots.x(dot.x+1).y(dot.y))                               //makes the connections between the dot and the right dot
+      move(dots.x(dot.x+1).y(dot.y), dot)                                         //calls move with the right dot
+    }
+    if(isValidMove(dot, 'Down)){                                                   //checks if down is a valid move
+      makeConnection(dot, dots.x(dot.x).y(dot.y+1))                               //makes the connections between the dot and the dot below
+      move(dots.x(dot.x).y(dot.y+1), dot)                                         //calls move with the dot below
+    }
+    if(isValidMove(dot, 'Left)){                                                   //checks if left is a valid move
+      makeConnection(dot, dots.x(dot.x-1).y(dot.y))                               //makes the connection between the dot and the left dot
+      move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
+    }
+    if(dot.links.full && !isLoop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
+      solve()
+    }
+    if(!isSolved(dot)){                                                                  //checks if the board is solved
+      removeConnection(dot, previousDot)                                          //if not remove the connection between the dot and previous dot
+    }
+  }
+
+  /**
     * @version 1.0 Sep 13, 2016.
     * Takes in a param Dot and a direction and checks to see if a move in that direction is permitted
     * @param d:Dot
     * @param s:String (Direction)
     * @return Boolean
     */
-  def validMove(d:Dot, s:Symbol):Boolean = {
+  def isValidMove(d:Dot, s:Symbol):Boolean = {
     if(d.links.full)                                                              //If all links are saturated no moves are valid
       false
     else if(s == 'Up){
@@ -219,10 +217,6 @@ class Solver(val board: Board) {
       false
   }
 
-  def makeConnection(dot:Dot, toDot:Dot):Unit = {
-    makeConnection(dot, toDot, l = false)
-  }
-
   /**
     * @version 1.0 Sep 13, 2016.
     * Sets the connection between dot and toDot by adding each other to their links object
@@ -231,7 +225,7 @@ class Solver(val board: Board) {
     * @param toDot
     * @return Unit
     */
-  def makeConnection(dot:Dot, toDot:Dot, l:Boolean) = {
+  def makeConnection(dot:Dot, toDot:Dot, l:Boolean = false) = {
     dot.links.add(toDot)
     toDot.links.add(dot)
     if(toDot.y - dot.y < 0){
@@ -327,39 +321,37 @@ class Solver(val board: Board) {
     }
   }
 
-  def solved(d:Dot):Boolean = {
-    for(y <- board.row;
-        x <- y.square)
-      if (x.value != -1 && !x.isFull)
-        return false
-    if(!loop(d))
-      false
-    else
-      true
-  }
 
-  def findStartingDot:(Dot, Dot) = {
-    for(x <- dots.x;
-      y <- x.y)
-      if(!y.links.empty && !y.links.full)
-        return (y, y.links.getNonEmpty)
-    (null, null)
-  }
+}
 
-  def initDots(): Unit = {
-    for(y <- board.row;
-      x <- y.square;
-      c <- x.connector)
-      if(c._2.set){
-        if(c._1 == 'Up)
-          makeConnection(dots.x(x.x).y(x.y), dots.x(x.x+1).y(x.y), c._2.locked)
-        else if(c._1 == 'Right)
-          makeConnection(dots.x(x.x+1).y(x.y), dots.x(x.x+1).y(x.y+1), c._2.locked)
-        else if(c._1 == 'Down)
-          makeConnection(dots.x(x.x).y(x.y+1), dots.x(x.x+1).y(x.y+1), c._2.locked)
-        else if(c._1 == 'Left)
-          makeConnection(dots.x(x.x).y(x.y), dots.x(x.x).y(x.y+1), c._2.locked)
-      }
-  }
+/**
+  * @version 1.0 Sep 13, 2016.
+  * A dot with the given x and y positions given in the parameter.
+  * Dot has an object 'links' of class Links whose contents are the neighboring dots with which it is connected
+  * @param xPos
+  * @param yPos
+  */
+class Dot(xPos:Int, yPos:Int){
+  val x = xPos
+  val y = yPos
+  val links = new Links(null, null)
+}
 
+/**
+  * @version 1.0 Sep 13, 2016.
+  * Holds two dots with which another dot shares a connection
+  * @param dot1
+  * @param dot2
+  */
+class Links(dot1:Dot, dot2:Dot){
+  var d1 = dot1
+  var d2 = dot2
+
+  def getNonEmpty:Dot = if(d1 != null) d1 else if(d2 != null) d2 else null
+  def empty:Boolean = d1 == null && d2 == null
+  def full:Boolean = d1 != null && d2 != null                                   //returns boolean value true if both dots are not null
+  def add(d:Dot) = if(d1 == null && !contains(d)) d1 = d
+  else if(d2 == null && !contains(d)) d2 = d                                    //add parameter dot to whichever dot is null
+  def contains(d:Dot) = d1 == d || d2 == d                                      //return boolean value true if the parameter dot is either of the dots
+  def remove(d:Dot) = if(d1 == d) d1 = null else if(d2 == d) d2 = null          //sets a dot to null if the parameter dot is the same as that dot
 }

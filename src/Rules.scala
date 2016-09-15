@@ -1,7 +1,3 @@
-/**
-  * Created by Torsvik on 06/09/2016.
-  */
-
 object Rules {
   def applyRules(board: Board) = {
     applyThrees(board)

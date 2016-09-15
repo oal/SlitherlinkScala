@@ -25,7 +25,6 @@ class Board(boardfile: List[String], startLine: Int, sideLength: Int) {
         row(y).square(x + 1).connector('Left).set = s
         row(y).square(x + 1).connector('Left).locked = l
       }
-      case _ => row(y).square(x).connector.filterKeys(Set('Up, 'Down, 'Left, 'Right))
     }
   }
 }

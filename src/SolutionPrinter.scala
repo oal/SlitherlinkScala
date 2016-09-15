@@ -1,7 +1,3 @@
-/**
-  * Created by Torsvik on 07/09/2016.
-  */
-
 class SolutionPrinter(board: Board) {
   for (y <- board.row) {
     for (x <- y.square) {
