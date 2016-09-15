@@ -1,7 +1,9 @@
+import java.io.File
+
 import scala.io.Source
 
-class BoardParser(path: String) {
-  private val boardFile = Source.fromFile(path).getLines.toList
+class BoardParser(file: File) {
+  private val boardFile = Source.fromFile(file).getLines.toList
 
   // Tuples of start position of board, and side length
   private val startList = boardFile.zipWithIndex.map({ case (line, i) =>
