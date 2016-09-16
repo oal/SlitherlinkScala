@@ -77,7 +77,7 @@ object Rules {
       board.setConnector(bottommost-1,rightmost, 'Right, s = true, l = true)
     }
 
-    // Ones right and above bottom left corner square
+    // Ones left and above bottom right corner square
     if (board.row(bottommost-1).square(rightmost).value == 1 && board.row(bottommost).square(rightmost-1).value == 1) {
       board.setConnector(bottommost, rightmost, 'Left, s = false, l = true)
       board.setConnector(bottommost, rightmost, 'Up, s = false, l = true)
