@@ -43,6 +43,13 @@ object Rules {
       board.setConnector(0, 0, 'Down, s = true, l = true)
     }
 
+    // Same as above, but with 3 and 2
+    if (board.row(0).square(1).value == 3 && board.row(1).square(0).value == 2) {
+      board.setConnector(0, 1, 'Right, s = true, l = true)
+    } else if (board.row(0).square(1).value == 2 && board.row(1).square(0).value == 3) {
+      board.setConnector(1, 0, 'Down, s = true, l = true)
+    }
+
     //---------
 
     //check top right corner, set connectors according to value
@@ -69,6 +76,13 @@ object Rules {
     } else if (board.row(0).square(rightmost - 1).value == 1 && board.row(1).square(rightmost).value == 3) {
       board.setConnector(0, rightmost, 'Left, s = false, l = true)
       board.setConnector(0, rightmost, 'Down, s = true, l = true)
+    }
+
+    // Same as above, but with 3 and 2
+    if (board.row(0).square(rightmost - 1).value == 3 && board.row(1).square(rightmost).value == 2) {
+      board.setConnector(0, rightmost-1, 'Left, s = true, l = true)
+    } else if (board.row(0).square(rightmost - 1).value == 2 && board.row(1).square(rightmost).value == 3) {
+      board.setConnector(1, rightmost, 'Down, s = true, l = true)
     }
 
     //---------
@@ -99,6 +113,13 @@ object Rules {
       board.setConnector(bottommost, 0, 'Up, s = false, l = true)
     }
 
+    // Same as above, but with 3 and 2
+    if (board.row(bottommost - 1).square(0).value == 3 && board.row(bottommost).square(1).value == 2) {
+      board.setConnector(bottommost-1, 0, 'Up, s = true, l = true)
+    } else if (board.row(bottommost - 1).square(0).value == 2 && board.row(bottommost).square(1).value == 3) {
+      board.setConnector(bottommost, 1, 'Right, s = true, l = true)
+    }
+
     //---------
 
     //check bottom right corner, set connectors according to value
@@ -125,6 +146,13 @@ object Rules {
       board.setConnector(bottommost, rightmost, 'Up, s = false, l = true)
     }
 
+    // Same as above, but with 3 and 2
+    if (board.row(bottommost - 1).square(rightmost).value == 3 && board.row(bottommost).square(rightmost - 1).value == 2) {
+      board.setConnector(bottommost-1, rightmost, 'Up, s = true, l = true)
+    } else if (board.row(bottommost - 1).square(rightmost).value == 2 && board.row(bottommost).square(rightmost - 1).value == 3) {
+      board.setConnector(bottommost, rightmost-1, 'Left, s = true, l = true)
+    }
+
     //---------
 
   }
@@ -134,7 +162,7 @@ object Rules {
       for (x <- y.square) {
         if (x.value == 3) {
           //Tries to find any value zero adjacent to 3 and sets connectors according to direction
-          if (x.y > 0 && b.row(x.y - 1).square(x.x).value == 0) {
+          if (x.x > 0 && x.y > 0 && b.row(x.y - 1).square(x.x).value == 0) {
             //Tries to find a zero above the square
             b.setConnector(x.y, x.x, 'Left, s = true, l = true) //Sets the left connector of the square
             b.setConnector(x.y, x.x, 'Right, s = true, l = true) //Sets the right connector of the square
@@ -142,7 +170,7 @@ object Rules {
             b.setConnector(x.y - 1, x.x + 1, 'Down, s = true, l = true) //Sets the bottom connector of the square in the "northeast" diagonal of the original
             b.setConnector(x.y - 1, x.x - 1, 'Down, s = true, l = true) //Sets the bottom connector of the square in the "northwest" diagonal of the original
           }
-          else if (x.y < b.row.size - 1 && b.row(x.y + 1).square(x.x).value == 0) {
+          else if (x.x > 0 && x.y > 0 && x.y < b.row.size - 1 && b.row(x.y + 1).square(x.x).value == 0) {
             //Tries to find a zero below the square
             b.setConnector(x.y, x.x, 'Left, s = true, l = true) //Sets the left connector of the square
             b.setConnector(x.y, x.x, 'Right, s = true, l = true) //Sets the right connector of the square
@@ -150,7 +178,7 @@ object Rules {
             b.setConnector(x.y + 1, x.x + 1, 'Up, s = true, l = true) //Sets the top connector of the square in the "southeast" diagonal of the original
             b.setConnector(x.y + 1, x.x - 1, 'Up, s = true, l = true) //Sets the top connector of the square in the "southwest" diagonal of the original
           }
-          else if (x.x > 0 && b.row(x.y).square(x.x - 1).value == 0) {
+          else if (x.x > 0 && x.y > 0 && b.row(x.y).square(x.x - 1).value == 0) {
             //Tries to find a zero left of the square
             b.setConnector(x.y, x.x, 'Right, s = true, l = true) //Sets the right connector of the square
             b.setConnector(x.y, x.x, 'Down, s = true, l = true) //Sets the bottom connector of the square
@@ -158,7 +186,7 @@ object Rules {
             b.setConnector(x.y - 1, x.x - 1, 'Right, s = true, l = true) //Sets the right connector of the square in the "northwest" diagonal of the original
             b.setConnector(x.y + 1, x.x - 1, 'Right, s = true, l = true) //Sets the right connector of the square in the "southwest" diagonal of the original
           }
-          else if (x.x < b.row(x.y).square.size - 1
+          else if (x.x > 0 && x.y > 0 && x.x < b.row(x.y).square.size - 1
             && b.row(x.y).square(x.x + 1).value == 0) {
             //Tries to find a zero right of the square
             b.setConnector(x.y, x.x, 'Left, s = true, l = true) //Sets the left connector of the square
