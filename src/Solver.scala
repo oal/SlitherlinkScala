@@ -1,6 +1,14 @@
+import java.io.PrintWriter
+
+import scala.sys.process
+
 class Solver(val board: Board) {
   Rules.applyRules(board)
-  Rules.applyThrees(board)
+
+  // For debugging while adding rules:
+//  val out = new PrintWriter(process.stdout)
+//  SolutionPrinter.printBoard(board, out)
+//  out.flush()
 
   /**
     * @version 1.0 Sep 13, 2016.

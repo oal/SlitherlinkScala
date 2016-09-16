@@ -1,4 +1,4 @@
-import java.io.PrintWriter
+import java.io.{PrintWriter}
 
 object SolutionPrinter {
   def printBoard(board: Board, out: PrintWriter) = {

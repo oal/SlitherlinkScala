@@ -1,7 +1,19 @@
 object Rules {
   def applyRules(board: Board) = {
-    applyThrees(board)
-    applyCorners(board)
+    apply1x1(board)
+    if (board.row.length > 1) {
+      applyThrees(board)
+      applyCorners(board)
+    }
+  }
+
+  def apply1x1(board: Board) = {
+    if (board.row.length == 1) {
+      board.setConnector(0, 0, 'Up, s = true, l = true)
+      board.setConnector(0, 0, 'Right, s = true, l = true)
+      board.setConnector(0, 0, 'Down, s = true, l = true)
+      board.setConnector(0, 0, 'Left, s = true, l = true)
+    }
   }
 
   def applyCorners(board: Board): Unit = {
@@ -15,35 +27,62 @@ object Rules {
       board.setConnector(1, 0, 'Left, s = true, l = true)
     }
 
+    // Ones left and below top left corner square
+    if (board.row(0).square(1).value == 1 && board.row(1).square(0).value == 1) {
+      board.setConnector(0, 0, 'Right, s = false, l = true)
+      board.setConnector(0, 0, 'Down, s = false, l = true)
+    }
+
     //check top right corner, set connectors according to value
-    if (board.row(0).square(board.row(0).square.size - 1).value == 3) {
-      board.setConnector(0, board.row(0).square.size - 1, 'Up, s = true, l = true)
-      board.setConnector(0, board.row(0).square.size - 1, 'Right, s = true, l = true)
+    val rightmost = board.row(0).square.size - 1;
+    if (board.row(0).square(rightmost).value == 3) {
+      board.setConnector(0, rightmost, 'Up, s = true, l = true)
+      board.setConnector(0, rightmost, 'Right, s = true, l = true)
     }
     else if (board.row(0).square(board.row(0).square.size - 1).value == 2) {
-      board.setConnector(0, board.row(0).square.size - 2, 'Up, s = true, l = true)
-      board.setConnector(1, board.row(0).square.size - 1, 'Right, s = true, l = true)
+      board.setConnector(0, rightmost-1, 'Up, s = true, l = true)
+      board.setConnector(1, rightmost, 'Right, s = true, l = true)
+    }
+
+    // Ones right and below top right corner square
+    if (board.row(0).square(rightmost-1).value == 1 && board.row(1).square(rightmost).value == 1) {
+      board.setConnector(0, rightmost, 'Left, s = false, l = true)
+      board.setConnector(0, rightmost, 'Down, s = false, l = true)
     }
 
     //check bottom left corner, set connectors according to value
-    if (board.row(board.row.size - 1).square(0).value == 3) {
-      board.setConnector(board.row.size - 1, 0, 'Down, s = true, l = true)
-      board.setConnector(board.row.size - 1, 0, 'Left, s = true, l = true)
+    val bottommost = board.row.size - 1
+    if (board.row(bottommost).square(0).value == 3) {
+      board.setConnector(bottommost, 0, 'Down, s = true, l = true)
+      board.setConnector(bottommost, 0, 'Left, s = true, l = true)
     }
-    else if (board.row(board.row.size - 1).square(0).value == 2) {
-      board.setConnector(board.row.size - 1, 1, 'Down, s = true, l = true)
-      board.setConnector(board.row.size - 2, 0, 'Left, s = true, l = true)
+    else if (board.row(bottommost).square(0).value == 2) {
+      board.setConnector(bottommost, 1, 'Down, s = true, l = true)
+      board.setConnector(bottommost, 0, 'Left, s = true, l = true)
+    }
+
+    // Ones right and above bottom left corner square
+    if (board.row(bottommost-1).square(0).value == 1 && board.row(bottommost).square(1).value == 1) {
+      board.setConnector(bottommost, 0, 'Right, s = false, l = true)
+      board.setConnector(bottommost, 0, 'Up, s = false, l = true)
     }
 
     //check bottom right corner, set connectors according to value
-    if (board.row(board.row.size - 1).square(board.row(0).square.size - 1).value == 3) {
-      board.setConnector(board.row.size - 1, board.row(0).square.size - 1, 'Down, s = true, l = true)
-      board.setConnector(board.row.size - 1, board.row(0).square.size - 1, 'Right, s = true, l = true)
+    if (board.row(bottommost).square(rightmost).value == 3) {
+      board.setConnector(bottommost, rightmost, 'Down, s = true, l = true)
+      board.setConnector(bottommost, rightmost, 'Right, s = true, l = true)
     }
-    else if (board.row(board.row.size - 1).square(board.row(0).square.size - 1).value == 2) {
-      board.setConnector(board.row.size - 1, board.row(0).square.size - 2, 'Down, s = true, l = true)
-      board.setConnector(board.row.size - 2, board.row(0).square.size - 1, 'Right, s = true, l = true)
+    else if (board.row(bottommost).square(rightmost).value == 2) {
+      board.setConnector(bottommost, rightmost-1, 'Down, s = true, l = true)
+      board.setConnector(bottommost-1,rightmost, 'Right, s = true, l = true)
     }
+
+    // Ones right and above bottom left corner square
+    if (board.row(bottommost-1).square(rightmost).value == 1 && board.row(bottommost).square(rightmost-1).value == 1) {
+      board.setConnector(bottommost, rightmost, 'Left, s = false, l = true)
+      board.setConnector(bottommost, rightmost, 'Up, s = false, l = true)
+    }
+
   }
 
   def applyThrees(b: Board) {
