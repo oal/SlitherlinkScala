@@ -19,34 +19,34 @@ object Rules {
 
   def applyCorners(board: Board): Unit = {
     //check top left corner, set connectors according to value
-    if (board.row(0).square(0).value == 3) {
+    if (board.getSquare(0, 0).value == 3) {
       board.setConnector(0, 0, 'Up, s = true, l = true)
       board.setConnector(0, 0, 'Left, s = true, l = true)
     }
-    else if (board.row(0).square(0).value == 2) {
+    else if (board.getSquare(0, 0).value == 2) {
       board.setConnector(0, 1, 'Up, s = true, l = true)
       board.setConnector(1, 0, 'Left, s = true, l = true)
     }
 
     // Ones left and below top left corner square
-    if (board.row(0).square(1).value == 1 && board.row(1).square(0).value == 1) {
+    if (board.getSquare(1, 0).value == 1 && board.getSquare(0, 1).value == 1) {
       board.setConnector(0, 0, 'Right, s = false, l = true)
       board.setConnector(0, 0, 'Down, s = false, l = true)
     }
 
     // Same as above, but with 3 and 1 instead of 1 and 1, both variants
-    if (board.row(0).square(1).value == 3 && board.row(1).square(0).value == 1) {
+    if (board.getSquare(1, 0).value == 3 && board.getSquare(0, 1).value == 1) {
       board.setConnector(0, 0, 'Right, s = true, l = true)
       board.setConnector(0, 0, 'Down, s = false, l = true)
-    } else if (board.row(0).square(1).value == 1 && board.row(1).square(0).value == 3) {
+    } else if (board.getSquare(1, 0).value == 1 && board.getSquare(0, 1).value == 3) {
       board.setConnector(0, 0, 'Right, s = false, l = true)
       board.setConnector(0, 0, 'Down, s = true, l = true)
     }
 
     // Same as above, but with 3 and 2
-    if (board.row(0).square(1).value == 3 && board.row(1).square(0).value == 2) {
+    if (board.getSquare(1, 0).value == 3 && board.getSquare(0, 1).value == 2) {
       board.setConnector(0, 1, 'Right, s = true, l = true)
-    } else if (board.row(0).square(1).value == 2 && board.row(1).square(0).value == 3) {
+    } else if (board.getSquare(1, 0).value == 2 && board.getSquare(0, 1).value == 3) {
       board.setConnector(1, 0, 'Down, s = true, l = true)
     }
 
@@ -54,7 +54,7 @@ object Rules {
 
     //check top right corner, set connectors according to value
     val rightmost = board.row(0).square.size - 1;
-    if (board.row(0).square(rightmost).value == 3) {
+    if (board.getSquare(rightmost, 0).value == 3) {
       board.setConnector(0, rightmost, 'Up, s = true, l = true)
       board.setConnector(0, rightmost, 'Right, s = true, l = true)
     }
@@ -64,24 +64,24 @@ object Rules {
     }
 
     // Ones right and below top right corner square
-    if (board.row(0).square(rightmost - 1).value == 1 && board.row(1).square(rightmost).value == 1) {
+    if (board.getSquare(rightmost - 1, 0).value == 1 && board.getSquare(rightmost, 1).value == 1) {
       board.setConnector(0, rightmost, 'Left, s = false, l = true)
       board.setConnector(0, rightmost, 'Down, s = false, l = true)
     }
 
     // Same as above, but with 3 and 1 instead of 1 and 1, both variants
-    if (board.row(0).square(rightmost - 1).value == 3 && board.row(1).square(rightmost).value == 1) {
+    if (board.getSquare(rightmost - 1, 0).value == 3 && board.getSquare(rightmost, 1).value == 1) {
       board.setConnector(0, rightmost, 'Left, s = true, l = true)
       board.setConnector(0, rightmost, 'Down, s = false, l = true)
-    } else if (board.row(0).square(rightmost - 1).value == 1 && board.row(1).square(rightmost).value == 3) {
+    } else if (board.getSquare(rightmost - 1, 0).value == 1 && board.getSquare(rightmost, 1).value == 3) {
       board.setConnector(0, rightmost, 'Left, s = false, l = true)
       board.setConnector(0, rightmost, 'Down, s = true, l = true)
     }
 
     // Same as above, but with 3 and 2
-    if (board.row(0).square(rightmost - 1).value == 3 && board.row(1).square(rightmost).value == 2) {
+    if (board.getSquare(rightmost - 1, 0).value == 3 && board.getSquare(rightmost, 1).value == 2) {
       board.setConnector(0, rightmost-1, 'Left, s = true, l = true)
-    } else if (board.row(0).square(rightmost - 1).value == 2 && board.row(1).square(rightmost).value == 3) {
+    } else if (board.getSquare(rightmost - 1, 0).value == 2 && board.getSquare(rightmost, 1).value == 3) {
       board.setConnector(1, rightmost, 'Down, s = true, l = true)
     }
 
@@ -89,67 +89,67 @@ object Rules {
 
     //check bottom left corner, set connectors according to value
     val bottommost = board.row.size - 1
-    if (board.row(bottommost).square(0).value == 3) {
+    if (board.getSquare(0, bottommost).value == 3) {
       board.setConnector(bottommost, 0, 'Down, s = true, l = true)
       board.setConnector(bottommost, 0, 'Left, s = true, l = true)
     }
-    else if (board.row(bottommost).square(0).value == 2) {
+    else if (board.getSquare(0, bottommost).value == 2) {
       board.setConnector(bottommost, 1, 'Down, s = true, l = true)
       board.setConnector(bottommost, 0, 'Left, s = true, l = true)
     }
 
     // Ones right and above bottom left corner square
-    if (board.row(bottommost - 1).square(0).value == 1 && board.row(bottommost).square(1).value == 1) {
+    if (board.getSquare(0, bottommost - 1).value == 1 && board.getSquare(1, bottommost).value == 1) {
       board.setConnector(bottommost, 0, 'Right, s = false, l = true)
       board.setConnector(bottommost, 0, 'Up, s = false, l = true)
     }
 
     // Same as above, but with 3 and 1 instead of 1 and 1, both variants
-    if (board.row(bottommost - 1).square(0).value == 3 && board.row(bottommost).square(1).value == 1) {
+    if (board.getSquare(0, bottommost - 1).value == 3 && board.getSquare(1, bottommost).value == 1) {
       board.setConnector(bottommost, 0, 'Right, s = false, l = true)
       board.setConnector(bottommost, 0, 'Up, s = true, l = true)
-    } else if (board.row(bottommost - 1).square(0).value == 1 && board.row(bottommost).square(1).value == 3) {
+    } else if (board.getSquare(0, bottommost - 1).value == 1 && board.getSquare(1, bottommost).value == 3) {
       board.setConnector(bottommost, 0, 'Right, s = true, l = true)
       board.setConnector(bottommost, 0, 'Up, s = false, l = true)
     }
 
     // Same as above, but with 3 and 2
-    if (board.row(bottommost - 1).square(0).value == 3 && board.row(bottommost).square(1).value == 2) {
+    if (board.getSquare(0, bottommost - 1).value == 3 && board.getSquare(1, bottommost).value == 2) {
       board.setConnector(bottommost-1, 0, 'Up, s = true, l = true)
-    } else if (board.row(bottommost - 1).square(0).value == 2 && board.row(bottommost).square(1).value == 3) {
+    } else if (board.getSquare(0, bottommost - 1).value == 2 && board.getSquare(1, bottommost).value == 3) {
       board.setConnector(bottommost, 1, 'Right, s = true, l = true)
     }
 
     //---------
 
     //check bottom right corner, set connectors according to value
-    if (board.row(bottommost).square(rightmost).value == 3) {
+    if (board.getSquare(rightmost, bottommost).value == 3) {
       board.setConnector(bottommost, rightmost, 'Down, s = true, l = true)
       board.setConnector(bottommost, rightmost, 'Right, s = true, l = true)
-    } else if (board.row(bottommost).square(rightmost).value == 2) {
+    } else if (board.getSquare(rightmost, bottommost).value == 2) {
       board.setConnector(bottommost, rightmost - 1, 'Down, s = true, l = true)
       board.setConnector(bottommost - 1, rightmost, 'Right, s = true, l = true)
     }
 
     // Ones left and above bottom right corner square
-    if (board.row(bottommost - 1).square(rightmost).value == 1 && board.row(bottommost).square(rightmost - 1).value == 1) {
+    if (board.getSquare(rightmost, bottommost - 1).value == 1 && board.getSquare(rightmost - 1, bottommost).value == 1) {
       board.setConnector(bottommost, rightmost, 'Left, s = false, l = true)
       board.setConnector(bottommost, rightmost, 'Up, s = false, l = true)
     }
 
     // Same as above, but with 3 and 1 instead of 1 and 1, both variants
-    if (board.row(bottommost - 1).square(rightmost).value == 3 && board.row(bottommost).square(rightmost - 1).value == 1) {
+    if (board.getSquare(rightmost, bottommost - 1).value == 3 && board.getSquare(rightmost - 1, bottommost).value == 1) {
       board.setConnector(bottommost, rightmost, 'Left, s = false, l = true)
       board.setConnector(bottommost, rightmost, 'Up, s = true, l = true)
-    } else if (board.row(bottommost - 1).square(rightmost).value == 1 && board.row(bottommost).square(rightmost - 1).value == 3) {
+    } else if (board.getSquare(rightmost, bottommost - 1).value == 1 && board.getSquare(rightmost - 1, bottommost).value == 3) {
       board.setConnector(bottommost, rightmost, 'Left, s = true, l = true)
       board.setConnector(bottommost, rightmost, 'Up, s = false, l = true)
     }
 
     // Same as above, but with 3 and 2
-    if (board.row(bottommost - 1).square(rightmost).value == 3 && board.row(bottommost).square(rightmost - 1).value == 2) {
+    if (board.getSquare(rightmost, bottommost - 1).value == 3 && board.getSquare(rightmost - 1, bottommost).value == 2) {
       board.setConnector(bottommost-1, rightmost, 'Up, s = true, l = true)
-    } else if (board.row(bottommost - 1).square(rightmost).value == 2 && board.row(bottommost).square(rightmost - 1).value == 3) {
+    } else if (board.getSquare(rightmost, bottommost - 1).value == 2 && board.getSquare(rightmost - 1, bottommost).value == 3) {
       board.setConnector(bottommost, rightmost-1, 'Left, s = true, l = true)
     }
 

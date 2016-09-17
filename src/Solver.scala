@@ -265,14 +265,14 @@ class Solver(val board: Board) {
   def removeConnection(dot:Dot, prevDot:Dot) = {
     if(prevDot.y - dot.y > 0){
       if(dot.x > board.row(dot.y).square.size-1
-        && !board.row(dot.y).square(dot.x-1).connector('Right).locked)
+        && !board.row(dot.y).square(dot.x-1).right.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
         board.setConnector(dot.y, dot.x-1, 'Right, s = false, l = false)
       }
       else if(dot.x <= board.row(dot.y).square.size-1
-        && !board.row(dot.y).square(dot.x).connector('Left).locked)
+        && !board.row(dot.y).square(dot.x).left.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
@@ -281,14 +281,14 @@ class Solver(val board: Board) {
     }
     else if(prevDot.x - dot.x < 0){
       if(prevDot.y > board.row.size-1
-        && !board.row(prevDot.y-1).square(prevDot.x).connector('Down).locked)
+        && !board.row(prevDot.y-1).square(prevDot.x).down.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
         board.setConnector(prevDot.y-1, prevDot.x, 'Down, s = false, l = false)
       }
       else if(prevDot.y <= board.row.size-1
-        && !board.row(prevDot.y).square(prevDot.x).connector('Up).locked)
+        && !board.row(prevDot.y).square(prevDot.x).up.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
@@ -297,14 +297,14 @@ class Solver(val board: Board) {
     }
     else if(prevDot.y - dot.y < 0){
       if(prevDot.x > board.row(prevDot.y).square.size-1
-        && !board.row(prevDot.y).square(prevDot.x-1).connector('Right).locked)
+        && !board.row(prevDot.y).square(prevDot.x-1).right.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
         board.setConnector(prevDot.y, prevDot.x-1, 'Right, s = false, l = false)
       }
       else if(prevDot.x <= board.row(prevDot.y).square.size-1
-        && !board.row(prevDot.y).square(prevDot.x).connector('Left).locked)
+        && !board.row(prevDot.y).square(prevDot.x).left.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
@@ -313,14 +313,14 @@ class Solver(val board: Board) {
     }
     else if(prevDot.x - dot.x > 0){
       if(dot.y > board.row.size-1
-        && !board.row(dot.y-1).square(dot.x).connector('Down).locked)
+        && !board.row(dot.y-1).square(dot.x).down.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)
         board.setConnector(dot.y-1, dot.x, 'Down, s = false, l = false)
       }
       else if(dot.y <= board.row.size-1
-        && !board.row(dot.y).square(dot.x).connector('Up).locked)
+        && !board.row(dot.y).square(dot.x).up.locked)
       {
         dot.links.remove(prevDot)
         prevDot.links.remove(dot)

@@ -5,25 +5,28 @@ class Board(boardfile: List[String], startLine: Int, sideLength: Int) {
   // Create row from text line and what line number it is
   val row = getBoard.zipWithIndex.map { case (line, lineNum) => new Row(line, lineNum) }
 
+  // Simple helper for cleaner lookups
+  def getSquare(x: Int, y: Int): Square = row(y).square(x)
+
   def setConnector(y: Int, x: Int, p: Symbol, s: Boolean, l: Boolean) = {
-    row(y).square(x).connector(p).set = s
-    row(y).square(x).connector(p).locked = l
+    getSquare(x, y).connector(p).set = s
+    getSquare(x, y).connector(p).locked = l
     p match {
       case 'Up => if (y > 0) {
-        row(y - 1).square(x).connector('Down).set = s
-        row(y - 1).square(x).connector('Down).locked = l
+        getSquare(x, y - 1).down.set = s
+        getSquare(x, y - 1).down.locked = l
       }
       case 'Down => if (y < row.size - 1) {
-        row(y + 1).square(x).connector('Up).set = s
-        row(y + 1).square(x).connector('Up).locked = l
+        getSquare(x, y + 1).up.set = s
+        getSquare(x, y + 1).up.locked = l
       }
       case 'Left => if (x > 0) {
-        row(y).square(x - 1).connector('Right).set = s
-        row(y).square(x - 1).connector('Right).locked = l
+        getSquare(x - 1, y).right.set = s
+        getSquare(x - 1, y).right.locked = l
       }
       case 'Right => if (x < row(y).square.size - 1) {
-        row(y).square(x + 1).connector('Left).set = s
-        row(y).square(x + 1).connector('Left).locked = l
+        getSquare(x + 1, y).left.set = s
+        getSquare(x + 1, y).left.locked = l
       }
     }
   }
@@ -46,6 +49,12 @@ class Square(nx: Int, ny: Int, nvalue: Int) {
     ('Left, new Connector(false)),
     ('Right, new Connector(false))
   )
+
+  // So we can look up on attributes directly instead of map access.
+  val up = connector('Up)
+  val down = connector('Down)
+  val left = connector('Left)
+  val right = connector('Right)
 
   def isEmpty: Boolean = {
     val c = for (i <- connector if i._2.set) yield 1

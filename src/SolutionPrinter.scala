@@ -19,14 +19,14 @@ object SolutionPrinter {
     out.println("+")
 
     def getHorSymbol(y: Int, x: Int, dir: Symbol): String = {
-      if (board.row(y).square(x).connector(dir).set)
+      if (board.getSquare(x, y).connector(dir).set)
         "-"
       else
         " "
     }
 
     def getVerSymbol(y: Int, x: Int, dir: Symbol): String = {
-      if (board.row(y).square(x).connector(dir).set)
+      if (board.getSquare(x, y).connector(dir).set)
         "|"
       else
         " "
