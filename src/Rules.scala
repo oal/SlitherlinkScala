@@ -8,6 +8,39 @@ object Rules {
     }
   }
 
+  // These rules are applied at bruteforce time, such as looping around a 3, and disabling all other lines around a 1
+  // if one line is already set.
+  def applyDependentRules(board: Board, x: Int, y: Int, side: Symbol): Unit = {
+    if(x < 0 || y < 0 || x >= board.row(0).square.length || y >= board.row.length) return
+
+    // Disable rest of 1s
+    if(board.row(y).square(x).value == 1) {
+      side match {
+        case 'Up => {
+          board.setConnector(y, x, 'Left, s=false, l=false)
+          board.setConnector(y, x, 'Down, s=false, l=false)
+          board.setConnector(y, x, 'Right, s=false, l=false)
+        }
+        case 'Right => {
+          board.setConnector(y, x, 'Up, s=false, l=false)
+          board.setConnector(y, x, 'Down, s=false, l=false)
+          board.setConnector(y, x, 'Left, s=false, l=false)
+        }
+        case 'Down => {
+          board.setConnector(y, x, 'Left, s=false, l=false)
+          board.setConnector(y, x, 'Up, s=false, l=false)
+          board.setConnector(y, x, 'Right, s=false, l=false)
+        }
+        case 'Left => {
+          board.setConnector(y, x, 'Up, s=false, l=false)
+          board.setConnector(y, x, 'Down, s=false, l=false)
+          board.setConnector(y, x, 'Right, s=false, l=false)
+        }
+      }
+    }
+
+  }
+
   def apply1x1(board: Board) = {
     if (board.row.length == 1) {
       board.setConnector(0, 0, 'Up, s = true, l = true)

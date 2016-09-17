@@ -102,18 +102,22 @@ class Solver(val board: Board) {
     if(isValidMove(dot, 'Up)){                                                     //checks if up is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y-1))                               //makes the connections between the dot and the dot above
       move(dots.x(dot.x).y(dot.y-1), dot)                                         //calls move with the above dot
+      Rules.applyDependentRules(board, dot.x, dot.y, 'Up)
     }
     if(isValidMove(dot, 'Right)){                                                  //checks if right is a valid move
       makeConnection(dot, dots.x(dot.x+1).y(dot.y))                               //makes the connections between the dot and the right dot
       move(dots.x(dot.x+1).y(dot.y), dot)                                         //calls move with the right dot
+      Rules.applyDependentRules(board, dot.x, dot.y, 'Right)
     }
     if(isValidMove(dot, 'Down)){                                                   //checks if down is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y+1))                               //makes the connections between the dot and the dot below
       move(dots.x(dot.x).y(dot.y+1), dot)                                         //calls move with the dot below
+      Rules.applyDependentRules(board, dot.x, dot.y, 'Down)
     }
     if(isValidMove(dot, 'Left)){                                                   //checks if left is a valid move
       makeConnection(dot, dots.x(dot.x-1).y(dot.y))                               //makes the connection between the dot and the left dot
       move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
+      Rules.applyDependentRules(board, dot.x, dot.y, 'Left)
     }
     if(dot.links.full && !isLoop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
       solve()

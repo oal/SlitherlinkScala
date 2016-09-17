@@ -5,7 +5,10 @@ class Board(boardfile: List[String], startLine: Int, sideLength: Int) {
   // Create row from text line and what line number it is
   val row = getBoard.zipWithIndex.map { case (line, lineNum) => new Row(line, lineNum) }
 
-  def setConnector(y: Int, x: Int, p: Symbol, s: Boolean, l: Boolean) = {
+  def setConnector(y: Int, x: Int, p: Symbol, s: Boolean, l: Boolean): Boolean = {
+    // If already locked, and we try to set it, return false.
+    if(row(y).square(x).connector(p).locked) return false
+
     row(y).square(x).connector(p).set = s
     row(y).square(x).connector(p).locked = l
     p match {
@@ -26,6 +29,8 @@ class Board(boardfile: List[String], startLine: Int, sideLength: Int) {
         row(y).square(x + 1).connector('Left).locked = l
       }
     }
+
+    true
   }
 }
 
