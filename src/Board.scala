@@ -38,11 +38,7 @@ class Row(row: String, rownumber: Int) {
     yield new Square(i, rownumber, Utils.toInt(row.split(" ")(i)))
 }
 
-class Square(nx: Int, ny: Int, nvalue: Int) {
-  val value = nvalue
-  val x = nx
-  val y = ny
-
+class Square(val x: Int, val y: Int, val value: Int) {
   val connector = Map[Symbol, Connector](
     ('Up, new Connector(false)),
     ('Down, new Connector(false)),
@@ -71,7 +67,4 @@ class Square(nx: Int, ny: Int, nvalue: Int) {
   }
 }
 
-class Connector(nset: Boolean) {
-  var set = nset
-  var locked = false
-}
+class Connector(var set: Boolean, var locked: Boolean = false) {}
