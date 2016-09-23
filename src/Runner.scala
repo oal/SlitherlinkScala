@@ -7,7 +7,7 @@ object Runner extends App {
     println(s"Loading boards from ${file.getAbsolutePath}")
     val parser = new BoardParser(file)
 
-    val out = new PrintWriter(new File(s"output/${file.getName}"), "UTF-8")
+    val out = new PrintWriter(new File(s"out/${file.getName}"), "UTF-8")
     out.println(parser.numPuzzles)
 
     println(s"Found ${parser.boards.length} boards. Solving...")

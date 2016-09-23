@@ -51,7 +51,7 @@ object Rules {
     }
 
     //---------
-
+/*
     //check top right corner, set connectors according to value
     val rightmost = board.row(0).square.size - 1;
     if (board.getSquare(rightmost, 0).value == 3) {
@@ -84,9 +84,9 @@ object Rules {
     } else if (board.getSquare(rightmost - 1, 0).value == 2 && board.getSquare(rightmost, 1).value == 3) {
       board.setConnector(1, rightmost, 'Down, s = true, l = true)
     }
-
+*/
     //---------
-
+/*
     //check bottom left corner, set connectors according to value
     val bottommost = board.row.size - 1
     if (board.getSquare(0, bottommost).value == 3) {
@@ -119,9 +119,9 @@ object Rules {
     } else if (board.getSquare(0, bottommost - 1).value == 2 && board.getSquare(1, bottommost).value == 3) {
       board.setConnector(bottommost, 1, 'Right, s = true, l = true)
     }
-
+*/
     //---------
-
+/*
     //check bottom right corner, set connectors according to value
     if (board.getSquare(rightmost, bottommost).value == 3) {
       board.setConnector(bottommost, rightmost, 'Down, s = true, l = true)
@@ -152,7 +152,7 @@ object Rules {
     } else if (board.getSquare(rightmost, bottommost - 1).value == 2 && board.getSquare(rightmost - 1, bottommost).value == 3) {
       board.setConnector(bottommost, rightmost-1, 'Left, s = true, l = true)
     }
-
+*/
     //---------
 
   }

@@ -139,15 +139,21 @@ class Solver(val board: Board) {
         && !dots.x(d.x).y(d.y-1).links.contains(d))
       {
         if(d.x == 0                                                               //If the dot's x is 0 check if the northeast square is full
-          && !board.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
+          && !board.row(d.y-1).square(d.x).isFull                                 //if not the move is allowed
+          && !board.row(d.y-1).square(d.x).left.locked
+        )
           true
-        else if(d.x == board.row(0).square.size                                       //If the dot's x is at the right edge check if the northwest square is full
-          && !board.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
+        else if(d.x == board.row(0).square.size                                   //If the dot's x is at the right edge check if the northwest square is full
+          && !board.row(d.y-1).square(d.x-1).isFull                               //if not the move is allowed
+          && !board.row(d.y-1).square(d.x-1).right.locked
+        )
           true
         else if (d.x > 0                                                          //If the dot is at neither of x's edges, check if both north squares are full
-          && d.x < board.row(0).square.size                                           //if neither are full the move is allowed
+          && d.x < board.row(0).square.size                                       //if neither are full the move is allowed
           && !board.row(d.y-1).square(d.x-1).isFull
-          && !board.row(d.y-1).square(d.x).isFull)
+          && !board.row(d.y-1).square(d.x).isFull
+          && !board.row(d.y-1).square(d.x).left.locked
+        )
           true
         else
           false
@@ -161,15 +167,21 @@ class Solver(val board: Board) {
         && !dots.x(d.x+1).y(d.y).links.contains(d))
       {
         if (d.y == 0                                                              //If the dot's y is 0 check if the southeast square is full
-          && !board.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
+          && !board.row(d.y).square(d.x).isFull                                   //if not the move is allowed
+          && !board.row(d.y).square(d.x).up.locked
+        )
           true
-        else if(d.y == board.row.size                                                 //If the dot's y is at the bottom edge check if the northeast square is full
-          && !board.row(d.y-1).square(d.x).isFull)                                    //if not the move is allowed
+        else if(d.y == board.row.size                                             //If the dot's y is at the bottom edge check if the northeast square is full
+          && !board.row(d.y-1).square(d.x).isFull                                 //if not the move is allowed
+          && !board.row(d.y-1).square(d.x).down.locked
+        )
           true
-        else if(board.row.size > d.y                                                  //If the dot is at neither of y's edges, check if both east squares are full
+        else if(board.row.size > d.y                                              //If the dot is at neither of y's edges, check if both east squares are full
           && d.y > 0                                                              //if neither are full the move is allowed
           && !board.row(d.y).square(d.x).isFull
-          && !board.row(d.y-1).square(d.x).isFull)
+          && !board.row(d.y-1).square(d.x).isFull
+          && !board.row(d.y).square(d.x).up.locked
+        )
           true
         else
           false
@@ -183,15 +195,21 @@ class Solver(val board: Board) {
         && !dots.x(d.x).y(d.y+1).links.contains(d))
       {
         if(d.x == 0                                                               //If the dot's x is 0 check if the southeast square is full
-          && !board.row(d.y).square(d.x).isFull)                                      //if not the move is allowed
+          && !board.row(d.y).square(d.x).isFull                                   //if not the move is allowed
+          && !board.row(d.y).square(d.x).left.locked
+        )
           true
-        else if(d.x == board.row(0).square.size                                       //If the dot's x is at the right edge check if the southwest square is full
-          && !board.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
+        else if(d.x == board.row(0).square.size                                   //If the dot's x is at the right edge check if the southwest square is full
+          && !board.row(d.y).square(d.x-1).isFull                                 //if not the move is allowed
+          && !board.row(d.y).square(d.x-1).right.locked
+        )
           true
         else if(d.x > 0                                                           //If the dot is at neither of x's edges, check if both south squares are full
-          && d.x < board.row(d.y).square.size                                         //if neither are full the move is allowed
+          && d.x < board.row(d.y).square.size                                     //if neither are full the move is allowed
           && !board.row(d.y).square(d.x).isFull
-          && !board.row(d.y).square(d.x-1).isFull)
+          && !board.row(d.y).square(d.x-1).isFull
+          && !board.row(d.y).square(d.x).left.locked
+        )
           true
         else
           false
@@ -205,15 +223,21 @@ class Solver(val board: Board) {
         && !dots.x(d.x-1).y(d.y).links.contains(d))
       {
         if(d.y == 0                                                               //If the dot's y is 0 check if the southwest square is full
-          && !board.row(d.y).square(d.x-1).isFull)                                    //if not the move is allowed
+          && !board.row(d.y).square(d.x-1).isFull                                 //if not the move is allowed
+          //&& !board.row(d.y).square(d.x-1).up.locked
+        )
           true
-        else if(d.y == board.row.size                                                 //If the dot's y is at the bottom edge check if the northwest square is full
-          && !board.row(d.y-1).square(d.x-1).isFull)                                  //if not the move is allowed
+        else if(d.y == board.row.size                                             //If the dot's y is at the bottom edge check if the northwest square is full
+          && !board.row(d.y-1).square(d.x-1).isFull                               //if not the move is allowed
+          && !board.row(d.y-1).square(d.x-1).down.locked
+        )
           true
-        else if(d.y < board.row.size                                                  //If the dot is at neither of y's edges, check if both west squares are full
+        else if(d.y < board.row.size                                              //If the dot is at neither of y's edges, check if both west squares are full
           && d.y > 0                                                              //if neither are full the move is allowed
           && !board.row(d.y).square(d.x-1).isFull
-          && !board.row(d.y-1).square(d.x-1).isFull)
+          && !board.row(d.y-1).square(d.x-1).isFull
+          && !board.row(d.y).square(d.x-1).up.locked
+        )
           true
         else
           false
