@@ -99,26 +99,27 @@ class Solver(val board: Board) {
     * @param previousDot
     */
   def move(dot:Dot, previousDot:Dot):Unit = {
-    if(isValidMove(dot, 'Up)){                                                     //checks if up is a valid move
+    //curveThree(dot:Dot)
+    if(isValidMove(dot, 'Up)){                                                    //checks if up is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y-1))                               //makes the connections between the dot and the dot above
       move(dots.x(dot.x).y(dot.y-1), dot)                                         //calls move with the above dot
     }
-    if(isValidMove(dot, 'Right)){                                                  //checks if right is a valid move
+    if(isValidMove(dot, 'Right)){                                                 //checks if right is a valid move
       makeConnection(dot, dots.x(dot.x+1).y(dot.y))                               //makes the connections between the dot and the right dot
       move(dots.x(dot.x+1).y(dot.y), dot)                                         //calls move with the right dot
     }
-    if(isValidMove(dot, 'Down)){                                                   //checks if down is a valid move
+    if(isValidMove(dot, 'Down)){                                                  //checks if down is a valid move
       makeConnection(dot, dots.x(dot.x).y(dot.y+1))                               //makes the connections between the dot and the dot below
       move(dots.x(dot.x).y(dot.y+1), dot)                                         //calls move with the dot below
     }
-    if(isValidMove(dot, 'Left)){                                                   //checks if left is a valid move
+    if(isValidMove(dot, 'Left)){                                                  //checks if left is a valid move
       makeConnection(dot, dots.x(dot.x-1).y(dot.y))                               //makes the connection between the dot and the left dot
       move(dots.x(dot.x-1).y(dot.y), dot)                                         //calls move with the left dot
     }
-    if(dot.links.full && !isLoop(dot)){                                             //calls start to find new point to move from if dot is full but not in a loop
+    if(dot.links.full && !isLoop(dot)){                                           //calls start to find new point to move from if dot is full but not in a loop
       solve()
     }
-    if(!isSolved(dot)){                                                                  //checks if the board is solved
+    if(!isSolved(dot)){                                                           //checks if the board is solved
       removeConnection(dot, previousDot)                                          //if not remove the connection between the dot and previous dot
     }
   }
@@ -353,7 +354,76 @@ class Solver(val board: Board) {
     }
   }
 
-
+  /*def curveThree(dot:Dot):Unit = {
+    if(isValidMove(dot, 'Up)){
+      if(
+          (dot.x == 0
+            && board.getSquare(dot.x, dot.y-1).value == 3)
+        ||
+          (dot.x == board.row(0).square.size
+            && board.getSquare(dot.x-1, dot.y-1).value == 3)
+        ||
+          (dot.x > 0
+            && dot.x < board.row(0).square.size
+            && (board.getSquare(dot.x, dot.y-1).value == 3
+              || board.getSquare(dot.x-1, dot.y-1).value == 3))
+      ){
+        makeConnection(dot, dots.x(dot.x).y(dot.y-1))
+        move(dots.x(dot.x).y(dot.y-1), dot)
+      }
+    }
+    if(isValidMove(dot, 'Right)){
+      if(
+          (dot.y == 0
+            && board.getSquare(dot.x, dot.y).value == 3)
+        ||
+          (dot.y == board.row.size
+            && board.getSquare(dot.x, dot.y-1).value == 3)
+        ||
+          (dot.y > 0
+            && dot.y < board.row.size
+            && (board.getSquare(dot.x, dot.y).value == 3
+              || board.getSquare(dot.x, dot.y-1).value == 3))
+      ){
+        makeConnection(dot, dots.x(dot.x+1).y(dot.y))
+        move(dots.x(dot.x+1).y(dot.y), dot)
+      }
+    }
+    if(isValidMove(dot, 'Down)){
+      if(
+          (dot.x == 0
+            && board.getSquare(dot.x, dot.y).value == 3)
+        ||
+          (dot.x == board.row(0).square.size
+            && board.getSquare(dot.x-1, dot.y).value == 3)
+        ||
+          (dot.x > 0
+            && dot.x < board.row(0).square.size
+            && (board.getSquare(dot.x, dot.y).value == 3
+              || board.getSquare(dot.x-1, dot.y).value == 3))
+      ){
+        makeConnection(dot, dots.x(dot.x).y(dot.y+1))
+        move(dots.x(dot.x).y(dot.y+1), dot)
+      }
+    }
+    if(isValidMove(dot, 'Left)){
+      if(
+        (dot.y == 0
+          && board.getSquare(dot.x-1, dot.y).value == 3)
+          ||
+          (dot.y == board.row.size
+            && board.getSquare(dot.x-1, dot.y-1).value == 3)
+          ||
+          (dot.y > 0
+            && dot.y < board.row.size
+            && (board.getSquare(dot.x-1, dot.y).value == 3
+            || board.getSquare(dot.x-1, dot.y-1).value == 3))
+      ){
+        makeConnection(dot, dots.x(dot.x-1).y(dot.y))
+        move(dots.x(dot.x-1).y(dot.y), dot)
+      }
+    }
+  }*/
 }
 
 /**
@@ -387,3 +457,4 @@ class Links(dot1:Dot, dot2:Dot){
   def contains(d:Dot) = d1 == d || d2 == d                                      //return boolean value true if the parameter dot is either of the dots
   def remove(d:Dot) = if(d1 == d) d1 = null else if(d2 == d) d2 = null          //sets a dot to null if the parameter dot is the same as that dot
 }
+
