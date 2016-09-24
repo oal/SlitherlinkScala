@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/slithertest.iml" filepath="$PROJECT_DIR$/slithertest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SlitherlinkScala.iml" filepath="$PROJECT_DIR$/SlitherlinkScala.iml" />
     </modules>
   </component>
 </project>
